@@ -1,0 +1,9 @@
+{% extends 'email/base_email.html' %}
+
+{% block message_body %}
+<p>Мы рады приветствовать Вас в нашем маленьком, но уютном банке. Вот номер вашего первого счета в нашем банке:</p>
+<div style="text-align:center"><p dir="ltr"><strong
+        style="text-align:center;font-size:24px;font-weight:bold">{{ account }}</strong></p>
+</div>
+
+{% endblock %}

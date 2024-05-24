@@ -1,0 +1,10 @@
+{% extends 'email/base_email.html' %}
+
+{% block message_body %}
+<p>Мы отправили на Вашу электронную почту код подверждения. Собственно, вот и он:</p>
+<div style="text-align:center"><p dir="ltr"><strong
+        style="text-align:center;font-size:24px;font-weight:bold">{{ confirm_code }}</strong></p>
+</div>
+    <strong>Никому не сообщайте этот код.</strong></p>
+
+{% endblock %}
