@@ -21,7 +21,7 @@ def validate_token(token: str):
 
         raise ValidateError("Недействительный токен.")
 
-    return binary_data, token
+    return binary_data
 
 
 def check_unique_email(email):

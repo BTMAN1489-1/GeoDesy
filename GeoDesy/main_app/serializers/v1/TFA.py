@@ -1,5 +1,4 @@
-import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from rest_framework import serializers
 import config
 from main_app.models import TFA
@@ -13,25 +12,24 @@ class TwoFactoryAuthentication(serializers.Serializer):
     confirm_code = serializers.CharField()
 
     _event = None
-    _payload = None
 
     @classmethod
     def verify_event(cls, event: str):
         if event != cls._event:
             raise AuthenticationFailedAPIError("Неверный TFA токен.")
 
-    def validate_tfa_token(self, tfa_token: str):
-        binary_data, token = custom_validators.validate_token(tfa_token)
-        self._payload = algorithms.deserialize_to_dict(binary_data)
-        return token
+    def validate(self, attrs):
+        binary_data = custom_validators.validate_token(attrs["tfa_token"])
+        payload = algorithms.deserialize_to_dict(binary_data)
+        attrs["payload"] = payload
+        return attrs
+
 
     @classmethod
     def create_tfa(cls, /, event, user, **kwargs):
-        confirm_code = auth_tools.create_confirm_code()
-        tfa_id = uuid.uuid4().hex
-        expired_datetime_code = datetime.utcnow() + timedelta(seconds=config.INTERVAL_CONFIRM_CODE_IN_SECONDS)
+        tfa = TFA.objects.create()
 
-        data = {"uuid": tfa_id, "event": event}
+        data = {"uuid": tfa.tfa_id.hex, "event": event}
         data.update(kwargs)
         binary_data = algorithms.serialize_to_json(data)
         tfa_token = auth_tools.create_token(binary_data)
@@ -41,21 +39,16 @@ class TwoFactoryAuthentication(serializers.Serializer):
             "expiration_confirm_code_in_seconds": config.INTERVAL_CONFIRM_CODE_IN_SECONDS
         }
         message_handler = handlers.MessageHandler(user)
-        message_handler.send_confirm_code(confirm_code)
-
-        return TFA.objects.create(
-            tfa_id=tfa_id,
-            confirm_code=confirm_code,
-            expired_datetime_code=expired_datetime_code
-        )
+        message_handler.send_confirm_code(tfa.confirm_code)
+        return tfa
 
     def check_tfa(self, validated_data: dict):
         current_datetime = datetime.utcnow()
-
-        self.verify_event(self._payload['event'])
+        payload = validated_data["payload"]
+        self.verify_event(payload['event'])
 
         try:
-            tfa = TFA.objects.get(tfa_id=self._payload["uuid"])
+            tfa = TFA.objects.get(tfa_id=payload["uuid"])
         except TFA.DoesNotExist:
             raise NotFoundAPIError("Незарегистрированый TFA токен")
 
@@ -66,6 +59,7 @@ class TwoFactoryAuthentication(serializers.Serializer):
             raise AuthenticationFailedAPIError("Неверный код подверждения")
 
         tfa.delete()
+        return payload
 
     def create(self, validated_data):
         raise NotImplementedError()

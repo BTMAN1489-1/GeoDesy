@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from rest_framework import serializers
 import config
@@ -5,7 +7,7 @@ from main_app.models import Session, User, TFA
 from main_app.serializers.v1.TFA import TwoFactoryAuthentication
 from utils import auth_tools, custom_validators, algorithms, mocks
 from utils.context import CurrentContext
-from main_app.exceptions import NotFoundAPIError, BadEnterAPIError, PermissionDeniedAPIError
+from main_app.exceptions import NotFoundAPIError, BadEnterAPIError
 
 
 class CreateAuthorizationSerializer(serializers.Serializer):
@@ -23,11 +25,13 @@ class CreateAuthorizationSerializer(serializers.Serializer):
 
             raise NotFoundAPIError(f'Пользователя с email {email} не существует.')
 
-        verified = auth_tools.verify_passwords(user.password, user.salt, row_password)
+        verified = user.check_password(row_password)
         if not verified:
             raise BadEnterAPIError('Неправильно введенны данные аутентификации.')
 
-        access_token, refresh_token = Session.create_session(user)
+        session = Session.objects.create(user)
+        expiration_datetime = datetime.utcnow() + timedelta(seconds=config.INTERVAL_API_TOKEN_IN_SECONDS)
+        access_token, refresh_token = auth_tools.create_jwt_tokens(session.api_id.hex, expiration_datetime)
         ctx = CurrentContext()
         ctx.response = {
             "access_token": access_token,
@@ -40,26 +44,23 @@ class CreateAuthorizationSerializer(serializers.Serializer):
 class UpdateJWTSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 
-    _payload = None
-
-    def validate_refresh_token(self, refresh_token):
-        binary_data, token = custom_validators.validate_token(refresh_token)
-        self._payload = algorithms.deserialize_to_dict(binary_data)
-        return token
+    def validate(self, attrs):
+        binary_data = custom_validators.validate_token(attrs["refresh_token"])
+        payload = algorithms.deserialize_to_dict(binary_data)
+        attrs["payload"] = payload
+        return attrs
 
     def create(self, validated_data):
-        refresh_token = validated_data['refresh_token']
+        payload = validated_data['payload']
         try:
 
-            session = Session.objects.get(api_id=self._payload["uuid"])
+            session = Session.objects.get(api_id=payload["uuid"])
 
         except Session.DoesNotExist:
             raise NotFoundAPIError('Указанный токен не существует')
 
-        if not auth_tools.compare_digest(session.refresh_token, refresh_token):
-            raise PermissionDeniedAPIError('Недействительный токен обновления')
-
-        access_token, refresh_token = Session.update_session(session)
+        expiration_datetime = datetime.utcnow() + timedelta(seconds=config.INTERVAL_API_TOKEN_IN_SECONDS)
+        access_token, refresh_token = auth_tools.create_jwt_tokens(session.api_id.hex, expiration_datetime)
         ctx = CurrentContext()
         ctx.response = {
             "access_token": access_token,
@@ -92,14 +93,14 @@ class CreateChangeAuthSerializer(serializers.Serializer):
             new_email = user.email
 
         password_hash = user.password
-        salt = user.salt
+
         if new_password is not None:
-            password_hash, salt = auth_tools.calculate_password_hash(new_password)
+            password_hash = make_password(new_password)
 
         update_user = mocks.User(user.first_name, user.second_name, user.third_name, user.sex, new_email)
 
         tfa = TwoFactoryAuthentication.create_tfa(user=update_user, event=TFA.Event.ChangeAuth, email=new_email,
-                                                  password_hash=password_hash, salt=salt)
+                                                  password_hash=password_hash)
         return tfa
 
 
@@ -107,16 +108,15 @@ class UpdateChangeAuthSerializer(TwoFactoryAuthentication):
     _event = TFA.Event.ChangeAuth
 
     def create(self, validated_data):
-        self.check_tfa(validated_data=validated_data)
+        payload = self.check_tfa(validated_data=validated_data)
 
         user = CurrentContext().user
         try:
-            user.email = self._payload['email']
-            user.password = self._payload['password_hash']
-            user.salt = self._payload['salt']
+            user.email = payload['email']
+            user.password = payload['password_hash']
             user.save()
         except IntegrityError:
-            raise BadEnterAPIError(f"{self._payload['email']} уже занят")
+            raise BadEnterAPIError(f"{payload['email']} уже занят")
 
         ctx = CurrentContext()
         ctx.response = {
@@ -143,9 +143,9 @@ class CreateForgottenPasswordSerializer(serializers.Serializer):
 
         except User.DoesNotExist:
             raise NotFoundAPIError(f'Пользователя с email {email} не существует.')
-        password_hash, salt = auth_tools.calculate_password_hash(new_password)
+        password_hash = make_password(new_password)
         tfa = TwoFactoryAuthentication.create_tfa(user=user, event=TFA.Event.ForgottenPassword,
-                                                  password_hash=password_hash, salt=salt, email=email)
+                                                  password_hash=password_hash, email=email)
         return tfa
 
 
@@ -153,8 +153,8 @@ class UpdateForgottenPasswordSerializer(TwoFactoryAuthentication):
     _event = TFA.Event.ForgottenPassword
 
     def create(self, validated_data):
-        self.check_tfa(validated_data=validated_data)
-        email = self._payload['email']
+        payload = self.check_tfa(validated_data=validated_data)
+        email = payload['email']
 
         try:
 
@@ -162,8 +162,7 @@ class UpdateForgottenPasswordSerializer(TwoFactoryAuthentication):
 
         except User.DoesNotExist:
             raise NotFoundAPIError(f'Пользователя с email {email} не существует.')
-        user.password = self._payload['password_hash']
-        user.salt = self._payload['salt']
+        user.password = payload['password_hash']
         user.save()
 
         ctx = CurrentContext()

@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 import config
 from .TFA import TwoFactoryAuthentication
 from main_app.models import Session, User, TFA
 from utils.custom_validators import validate_russian_text, check_unique_email
-from utils.auth_tools import calculate_password_hash
+from utils.auth_tools import create_jwt_tokens
 from django.db import IntegrityError
 from main_app.exceptions import BadEnterAPIError
 from utils.context import CurrentContext
@@ -23,7 +25,8 @@ class CreateRegistrationSerializer(serializers.Serializer):
         return email
 
     def create(self, validated_data):
-        password_hash, salt = calculate_password_hash(validated_data['password'])
+        row_password = validated_data["password"]
+        password_hash = make_password(row_password)
         user = mocks.User(email=validated_data['email'], first_name=validated_data['first_name'],
                           second_name=validated_data['second_name'],
                           third_name=validated_data['third_name'],
@@ -31,7 +34,7 @@ class CreateRegistrationSerializer(serializers.Serializer):
 
         tfa = TwoFactoryAuthentication.create_tfa(event=TFA.Event.Registration, user=user,
                                                   email=user.email,
-                                                  password_hash=password_hash, salt=salt,
+                                                  password_hash=password_hash,
                                                   first_name=user.first_name,
                                                   second_name=user.second_name,
                                                   third_name=user.third_name,
@@ -43,22 +46,23 @@ class UpdateRegistrationSerializer(TwoFactoryAuthentication):
     _event = TFA.Event.Registration
 
     def create(self, validated_data):
-        self.check_tfa(validated_data=validated_data)
+        payload = self.check_tfa(validated_data=validated_data)
 
         try:
             user = User.objects.create(
-                first_name=self._payload['first_name'],
-                second_name=self._payload['second_name'],
-                third_name=self._payload['third_name'],
-                sex=self._payload['sex'],
-                email=self._payload['email'],
-                password=self._payload['password_hash'],
-                salt=self._payload['salt'],
+                first_name=payload['first_name'],
+                second_name=payload['second_name'],
+                third_name=payload['third_name'],
+                sex=payload['sex'],
+                email=payload['email'],
+                password=payload['password_hash']
             )
         except IntegrityError:
-            raise BadEnterAPIError(f"Потльзователь с почтой {self._payload['email']} уже существует.")
+            raise BadEnterAPIError(f"Потльзователь с почтой {payload['email']} уже существует.")
 
-        access_token, refresh_token = Session.create_session(user)
+        session = Session.objects.create(user)
+        expiration_datetime = datetime.utcnow() + timedelta(seconds=config.INTERVAL_API_TOKEN_IN_SECONDS)
+        access_token, refresh_token = create_jwt_tokens(session.api_id.hex, expiration_datetime)
         ctx = CurrentContext()
         ctx.response = {
             "access_token": access_token,

@@ -18,8 +18,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
             if data['type'] == TypeToken.ACCESS:
                 current_datetime = datetime.utcnow()
-                expiration_datetime = data["expiration_datetime"]
-                expiration_datetime = datetime.fromisoformat(expiration_datetime)
+                expiration_datetime = datetime.fromisoformat(data["expiration_datetime"])
 
                 # if current_datetime <= expiration_datetime:
                 session = Session.objects.get(api_id=data['uuid'])
@@ -32,5 +31,6 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         except Exception:
             raise AuthenticationFailedAPIError(msg)
+
 
 

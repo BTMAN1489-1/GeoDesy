@@ -13,7 +13,7 @@ class UserInfoAPIView(JWTAuthenticationAPIView):
 
     @InContextAPI()
     def put(self, request):
-        serializer = user_info.UserInfoSerializer(data=request.data, instance=request.user)
+        serializer = user_info.UserInfoSerializer(data=request.data, instance=request.user, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

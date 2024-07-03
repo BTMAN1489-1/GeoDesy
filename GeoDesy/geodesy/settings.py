@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from config import (SECRET_KEY, ALLOWED_HOSTS, EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,
-                    CORS_ALLOWED_ORIGINS, CSRF_TRUSTED_ORIGINS)
+                    CORS_ALLOWED_ORIGINS, CSRF_TRUSTED_ORIGINS, MEDIA_URl)
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'corsheaders',
     'main_app',
     'rest_framework',
@@ -150,3 +151,12 @@ EMAIL_HOST_USER = EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = True
+
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
+
+MEDIA_URL = MEDIA_URl
+
+
+AUTH_USER_MODEL = "main_app.User"

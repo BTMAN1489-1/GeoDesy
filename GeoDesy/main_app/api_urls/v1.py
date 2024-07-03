@@ -1,5 +1,5 @@
 from django.urls import path
-from main_app.views.v1 import user_info, authorization, registration, JWT
+from main_app.views.v1 import user_info, authorization, registration, JWT, cards, map
 
 urlpatterns = [
     path('registration/', registration.RegistrationAPIView.as_view()),
@@ -8,4 +8,9 @@ urlpatterns = [
     path('auth/forgotten/password/', authorization.ForgottenPasswordView.as_view()),
     path('info/user/', user_info.UserInfoAPIView.as_view()),
     path('jwt/update/', JWT.UpdateJWTAPIView.as_view()),
+    path('card/create/', cards.CreateCardAPIView.as_view()),
+    path('map/points/', map.GeoPointAPIView.as_view()),
+    path('card/create/', cards.CreateCardAPIView.as_view()),
+    path('card/update/', cards.UpdateCardAPIView.as_view()),
+    path('card/info/', cards.ShowCardAPIView.as_view()),
 ]
