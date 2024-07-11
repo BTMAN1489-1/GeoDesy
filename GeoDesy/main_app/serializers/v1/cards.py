@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.fields import empty
+import ujson
 from main_app.exceptions import ValidateError
 from main_app.exceptions import NotFoundAPIError
 from utils import data, context, card_tools
@@ -6,11 +8,23 @@ from main_app.models import Card
 import re
 
 
-class CommentSerializer(serializers.Serializer):
+class BaseCardSerializer(serializers.Serializer):
+    def get_value(self, dictionary):
+        primitive_value = dictionary.get(self.field_name, empty)
+        try:
+            dict_data = ujson.decode(primitive_value)
+
+        except ujson.JSONDecodeError:
+            return empty
+        else:
+            return dict_data
+
+
+class CommentSerializer(BaseCardSerializer):
     comment = serializers.CharField(required=False, default=None)
 
 
-class RecommendationSerializer(serializers.Serializer):
+class RecommendationSerializer(BaseCardSerializer):
     recommendation = serializers.CharField(required=False, default=None)
 
     def validate_recommendation(self, value):
@@ -103,7 +117,7 @@ class StuffInput(serializers.Serializer):
         return value
 
 
-class CardPropertiesSerializer(serializers.Serializer):
+class CardPropertiesSerializer(BaseCardSerializer):
     identification_pillar = DetectedProperty()
     type_of_sign = TypeSignSerializer()
     monolith_one = SavingProperty()
@@ -167,12 +181,12 @@ class UpdateCardForStuffSerializer(StuffInput):
         return update_card
 
 
-class SortedField(serializers.Serializer):
+class SortedField(BaseCardSerializer):
     field_name = serializers.ChoiceField(choices=card_tools.sorted_fields)
     reverse = serializers.BooleanField(required=False, default=False)
 
 
-class OwnedCardField(serializers.Serializer):
+class OwnedCardField(BaseCardSerializer):
     as_executor = serializers.BooleanField()
     as_inspector = serializers.BooleanField(required=False, default=False)
 

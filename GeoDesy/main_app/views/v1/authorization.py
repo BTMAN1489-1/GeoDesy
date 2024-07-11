@@ -31,8 +31,7 @@ class ChangeAuthAPIView(JWTAuthenticationAPIView):
         serializer = authorization.UpdateChangeAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        ctx = CurrentContext()
-        return Response(ctx.response)
+        return Response()
 
 
 class ForgottenPasswordView(APIView):
@@ -50,5 +49,4 @@ class ForgottenPasswordView(APIView):
         serializer = authorization.UpdateForgottenPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        ctx = CurrentContext()
-        return Response(ctx.response)
+        return Response()

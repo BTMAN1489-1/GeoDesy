@@ -6,4 +6,8 @@ class MainAppConfig(AppConfig):
     verbose_name = 'Для сотрудников'
     name = 'main_app'
 
+    def ready(self):
+        super().ready()
+        import main_app.schema
+
 

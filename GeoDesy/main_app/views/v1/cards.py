@@ -4,6 +4,7 @@ from main_app.permissions import StaffOnlyPermission
 from .JWT import JWTAuthenticationAPIView
 from utils.context import InContextAPI, CurrentContext
 from utils.upload_files.parsers import LimitedMultiPartParser
+from rest_framework.parsers import JSONParser
 
 
 class CreateCardAPIView(JWTAuthenticationAPIView):

@@ -118,14 +118,6 @@ class UpdateChangeAuthSerializer(TwoFactoryAuthentication):
         except IntegrityError:
             raise BadEnterAPIError(f"{payload['email']} уже занят")
 
-        ctx = CurrentContext()
-        ctx.response = {
-            "detail": {
-                "status": "success",
-                "description": "Данные авторизации успешно обновлены."
-            }
-        }
-
         return user
 
 
@@ -164,13 +156,5 @@ class UpdateForgottenPasswordSerializer(TwoFactoryAuthentication):
             raise NotFoundAPIError(f'Пользователя с email {email} не существует.')
         user.password = payload['password_hash']
         user.save()
-
-        ctx = CurrentContext()
-        ctx.response = {
-            "detail": {
-                "status": "success",
-                "description": "Пароль успешно обновлен."
-            }
-        }
 
         return user

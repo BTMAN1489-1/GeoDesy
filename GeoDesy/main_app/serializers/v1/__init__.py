@@ -3,4 +3,4 @@ from . import TFA
 from . import registration
 from . import authorization
 from . import cards
-from . import map
+from . import geo_points

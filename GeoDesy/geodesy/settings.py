@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'corsheaders',
-    'main_app',
     'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
+    'main_app',
 ]
 
 MIDDLEWARE = [
@@ -140,9 +142,19 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         # 'rest_framework.renderers.BrowsableAPIRenderer'
     ],
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'main_app.auth.JWTAuthentication'
-    # ]
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': []
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'GeoDesy corp.',
+    'DESCRIPTION': 'GeoDesy project',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 EMAIL_PORT = EMAIL_PORT
@@ -152,11 +164,9 @@ EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = True
 
-
 FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
 
 MEDIA_URL = MEDIA_URl
-
 
 AUTH_USER_MODEL = "main_app.User"
