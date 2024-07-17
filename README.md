@@ -10,17 +10,17 @@
 - Создайте почтовый ящик для рассылки писем. Инструкцию можно найти, например, [здесь](https://yandex.ru/support/mail/mail-clients/others.html)
 - [Установите и настройте СУБД](https://postgrespro.ru/docs/postgresql/16/tutorial)
 - Зайдите в папку проекта
-- Создайте файл `.env` и наполните его смыслом, исходя из шаблона `.env.dist`
+- Создайте файл `.env` и наполните его смыслом, исходя из шаблона `.env.dist` (кодировка UTF-8)
 - Установите все зависимости командой `pip install -r requirements.txt`
 
 ## Акт &#8545;
 ### _Настройка базы данных_
 
-- Для начала выполните скрипт `db_queries/MigrateFederalDistricts.sql`
-- Затем - скрипт `db_queries/MigrateFederalSubjects.sql`
 - Зайдите в папку `GeoDesy/`
 - Создайте файлы миграции командой `python manage.py makemigrations`
 - Выполните миграции командой `python manage.py migrate`
+- Выполните скрипт `db_queries/MigrateFederalDistricts.sql`
+- Затем - скрипт `db_queries/MigrateFederalSubjects.sql`
 
 ## Акт &#8546;
 ### _Окончательня настройка и запуск проекта_

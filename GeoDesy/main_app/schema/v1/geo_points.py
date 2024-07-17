@@ -17,7 +17,7 @@ class GeoPointMock(JWT.APIView):
 
 
 class GeoPointSchema(OpenApiViewExtension):
-    target_class = 'main_app.views.v1.map.GeoPointAPIView'
+    target_class = 'main_app.views.v1.geo_points.GeoPointAPIView'
 
     def view_replacement(self):
         return GeoPointMock
