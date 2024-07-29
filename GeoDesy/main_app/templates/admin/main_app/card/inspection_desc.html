@@ -1,0 +1,20 @@
+{% extends "admin/main_app/card/changed_info.html" %}
+
+{% block changed_description %}
+    <tr>
+        <td class="td-changed-info-style">
+            <div class="grid-container">
+                <label class="label-style">Текущий статус заявки:</label>
+                <span class="label-value-style">{{card.print_status}}</span>
+            </div>
+        </td>
+        {% if user is not None %}
+            <td class="td-changed-info-style">
+                <div class="grid-container">
+                    <label class="label-style">Время последней проверки (UTC-формат):</label>
+                    <span class="label-value-style">{{card.datetime_inspection}}</span>
+                </div>
+            </td>
+        {% endif %}
+    </tr>
+{% endblock %}

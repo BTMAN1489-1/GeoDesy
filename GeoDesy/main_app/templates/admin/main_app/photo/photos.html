@@ -1,0 +1,9 @@
+<table>
+    <tr>
+        <td>
+            {% for photo in photos %}
+                <img class="photos" src="{{ photo.path.url }}" tabindex="0">
+            {% endfor %}
+        </td>
+    </tr>
+</table>

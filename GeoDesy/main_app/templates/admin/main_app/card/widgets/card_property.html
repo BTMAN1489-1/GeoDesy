@@ -1,0 +1,36 @@
+<table class="table-property">
+    <tr class="table-tr">
+        <td class="table-td-label">
+            <label>{{ widget.value.description.label }}:</label>
+        </td>
+
+        <td class="table-td-value">
+            <div class="flex-container description-property">
+                {% for key, value in widget.value.description.value %}
+                    <span class="description-item">{{ value }}</span>
+                {% endfor %}
+            </div>
+        </td>
+    </tr>
+    {% if "comment" in widget.value %}
+        <tr class="table-tr">
+            <td class="table-td-label">
+                <label>{{ widget.value.comment.label }}:</label>
+            </td>
+            <td class="comment-property table-td-value">
+                <span>
+                    {{ widget.value.comment.value }}
+                </span>
+            </td>
+        </tr>
+    {% endif %}
+    <tr class="table-tr">
+        <td class="table-td-label">
+            <label>{{ widget.value.recommendation.label }}:</label>
+        </td>
+
+        <td class="table-td-value">
+            <textarea class="recommendation-property-textarea" name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %}>{% if widget.value.recommendation.value is not None %}{{ widget.value.recommendation.value }}{% endif %}</textarea>
+        </td>
+    </tr>
+</table>

@@ -108,14 +108,6 @@ class StuffInput(serializers.Serializer):
     height_above_sea_level = serializers.FloatField(required=False)
     trapezoids = serializers.CharField(required=False)
 
-    def validate_trapezoids(self, value):
-        pattern = re.compile(r"\d+:\d+")
-        res = re.fullmatch(pattern, value)
-        if res is None:
-            raise ValidateError(f"Неправильный формат ввода. Поддерживаемый формат ввода: {pattern.pattern}")
-
-        return value
-
 
 class CardPropertiesSerializer(BaseCardSerializer):
     identification_pillar = DetectedProperty()
@@ -140,8 +132,7 @@ class CreateCardForUserSerializer(UserInput, PhotoSerializer, CardPropertiesSeri
 
 
 class CreateCardForStuffSerializer(UserInput, StuffInput, PhotoSerializer, CardPropertiesSerializer):
-    status = serializers.ChoiceField(
-        choices=(Card.StatusChoice.SUCCESS, Card.StatusChoice.DENIED, Card.StatusChoice.PENDING))
+    status = serializers.ChoiceField(choices=Card.StatusChoice.choices, default=Card.StatusChoice.SENDING, required=False)
 
     def create(self, validated_data):
         ctx = context.CurrentContext()
@@ -151,8 +142,7 @@ class CreateCardForStuffSerializer(UserInput, StuffInput, PhotoSerializer, CardP
 
 
 class UpdateCardForStuffSerializer(StuffInput):
-    status = serializers.ChoiceField(
-        choices=(Card.StatusChoice.SUCCESS, Card.StatusChoice.DENIED, Card.StatusChoice.PENDING))
+    status = serializers.ChoiceField(choices=Card.StatusChoiceWithOutSending.choices)
     card_uuid = serializers.UUIDField()
     identification_pillar = RecommendationSerializer(required=False)
     type_of_sign = RecommendationSerializer(required=False)

@@ -1,0 +1,18 @@
+{% extends "admin/main_app/card/changed_info.html" %}
+
+{% block changed_description %}
+    <tr>
+        <td class="td-changed-info-style">
+            <div class="grid-container">
+                <label class="label-style">Дата проведения исследовательский работ:</label>
+                <span class="label-value-style">{{card.execute_date}}</span>
+            </div>
+        </td>
+        <td class="td-changed-info-style">
+            <div class="grid-container">
+                <label class="label-style">Время создания заявки (UTC-формат):</label>
+                <span class="label-value-style">{{card.datetime_creation}}</span>
+            </div>
+        </td>
+    </tr>
+{% endblock %}

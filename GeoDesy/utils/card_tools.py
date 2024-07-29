@@ -92,9 +92,9 @@ class Item:
 class ArrayItem:
     def __init__(self, label: str, *items: Item):
         self._label = label
-        self._items = tuple(items)
-        self._values = tuple([item.value for item in items])
-        self._labels = tuple([item.label for item in items])
+        new_items = self._items = dict((item.value, item)for item in items)
+        self._values = tuple(new_items.keys())
+        self._labels = tuple(new_items.values())
 
     def __str__(self):
         return f"{self._items}"
@@ -126,6 +126,12 @@ class ArrayItem:
         else:
             return item in self._values
 
+    def __getitem__(self, item):
+        return self._items[item]
+
+    def get(self, item, default=None):
+        return self._items.get(item, default)
+
 
 class MetaChoice(enum.EnumType):
     @property
@@ -136,6 +142,12 @@ class MetaChoice(enum.EnumType):
             result.append(choice.item)
 
         return result
+
+    def __getitem__(cls, item):
+        return vars(cls)[item]
+
+    def get(cls,  item, default=None):
+        return vars(cls).get(item, default)
 
 
 class Choice(enum.Enum, metaclass=MetaChoice):
@@ -207,3 +219,55 @@ class PossiblePropertyChoice(models.TextChoices):
     POSSIBLE = "possible", "возможно"
     CONDITIONALLY_POSSIBLE = "conditionally_possible", "условно возможно"
     IMPOSSIBLE = "impossible", "невозможно"
+
+
+class MetaStatusChoice(models.enums.ChoicesType):
+
+    @classmethod
+    def _create_new_class(metacls, name, items, filter_names):
+        bases = (models.TextChoices,)
+        attrs = metacls.__prepare__(name, bases)
+        for key, value in items:
+            if key in filter_names:
+                attrs[key] = value
+        new_class = metacls(name, bases, attrs)
+        return new_class
+
+    @staticmethod
+    def _unique_choices(names, values):
+        unique_filter = set()
+        result = []
+        for name in names:
+            value = values.pop(0)
+            if name not in unique_filter:
+                result.append((name, value))
+            unique_filter.add(name)
+
+        return result
+
+    def _result_operation(cls, other, new_class_name, filter_names):
+        names = cls.names + other.names
+        values = cls.choices + other.choices
+        items = cls._unique_choices(names, values)
+        return cls._create_new_class(new_class_name, items, filter_names)
+
+    def __or__(cls, other):
+        new_class_name = f"{cls.__name__}Or{other.__name__}"
+        filter_names = set(cls.names) | set(other.names)
+        new_class = cls._result_operation(other, new_class_name, filter_names)
+
+        return new_class
+
+    def __and__(cls, other):
+        new_class_name = f"{cls.__name__}And{other.__name__}"
+        filter_names = set(cls.names) & set(other.names)
+        new_class = cls._result_operation(other, new_class_name, filter_names)
+
+        return new_class
+
+    def __xor__(cls, other):
+        new_class_name = f"{cls.__name__}Without{other.__name__}"
+        filter_names = set(cls.names).difference(set(other.names))
+        new_class = cls._result_operation(other, new_class_name, filter_names)
+
+        return new_class

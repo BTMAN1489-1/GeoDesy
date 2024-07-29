@@ -1,0 +1,20 @@
+<script>
+    initMap();
+
+    async function initMap() {
+        await ymaps.ready;
+
+        const map = new ymaps.Map(
+            "{{ html_id_for_map }}",
+            {
+                location: {
+                    center: [{{ latitude }}, {{ longitude }}],
+                    zoom: 10,
+                    type: 'yandex#satellite'
+                }
+            }
+        );
+
+        map.addChild(new ymaps.YMapDefaultSchemeLayer());
+    }
+</script>

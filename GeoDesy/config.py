@@ -1,6 +1,5 @@
 import environs
 
-
 env = environs.Env()
 env.read_env()
 SECRET_KEY = env.str('SECRET_KEY').encode('UTF-8')
@@ -21,4 +20,4 @@ INTERVAL_CONFIRM_CODE_IN_SECONDS = 200
 INTERVAL_API_TOKEN_IN_SECONDS = 18000
 MIN_RADIUS_BETWEEN_POINTS = 30
 
-MEDIA_URl = env.str("MEDIA_URL")
+MAP_API_KEY = env.str('MAP_API_KEY')

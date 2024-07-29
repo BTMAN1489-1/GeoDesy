@@ -12,8 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from config import (SECRET_KEY, ALLOWED_HOSTS, EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,
-                    CORS_ALLOWED_ORIGINS, CSRF_TRUSTED_ORIGINS, MEDIA_URl)
-import sys
+                    CORS_ALLOWED_ORIGINS, CSRF_TRUSTED_ORIGINS)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +36,6 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -48,7 +46,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'admin_extra_buttons',
     'main_app',
+    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +68,7 @@ ROOT_URLCONF = 'geodesy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,7 +130,12 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = ""
+STATICFILES_DIRS = (BASE_DIR / 'static',)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -167,6 +172,7 @@ EMAIL_USE_SSL = True
 FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
 
-MEDIA_URL = MEDIA_URl
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
 
 AUTH_USER_MODEL = "main_app.User"

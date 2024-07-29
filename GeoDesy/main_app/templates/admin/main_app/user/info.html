@@ -1,0 +1,15 @@
+<tr>
+    <td class="td-changed-info-style">
+        <div class="grid-container">
+            <label class="label-style">{{ label_fio }}:</label>
+            <span class="label-value-style">{{ user.full_name }}</span>
+        </div>
+    </td>
+
+    <td class="td-changed-info-style">
+        <div class="grid-container">
+            <label class="label-style">{{ label_email }}:</label>
+            <a class="label-value-style" href="mailto:{{ user.email }}">{{ user.email }}</a>
+        </div>
+    </td>
+</tr>

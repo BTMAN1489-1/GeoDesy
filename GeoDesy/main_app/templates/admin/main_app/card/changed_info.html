@@ -1,0 +1,6 @@
+<table>
+    {% if user is not None %}
+        {% include "admin/main_app/user/info.html" with user=user label_fio=label_fio label_email=label_email only %}
+    {% endif %}
+    {% block changed_description %}{% endblock %}
+</table>

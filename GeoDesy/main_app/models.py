@@ -1,7 +1,11 @@
+import enum
+
 from django.db import models
 from main_app.db import managers
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from utils.custom_validators import validate_russian_text
+from utils.card_tools import MetaStatusChoice
+from django.utils import formats
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -29,15 +33,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = managers.UserManager()
 
+    @property
+    def full_name(self):
+        return " ".join(map(str.capitalize, (self.second_name, self.first_name, self.third_name)))
+
+    @property
+    def get_user_info(self):
+        return {"full_name": self.full_name, "email": self.email}
+
     def to_dict(self, is_staff=False):
-        d = {"first_name": self.first_name, "second_name": self.second_name, "third_name":self.third_name}
+        d = {"first_name": self.first_name, "second_name": self.second_name, "third_name": self.third_name}
         if is_staff:
             d["email"] = self.email
 
         return d
 
     def __str__(self):
-        return f"{self.second_name.capitalize()}  {self.first_name.capitalize()} {self.third_name.capitalize()}"
+        return self.full_name
 
     class Meta:
         verbose_name = 'пользователь'
@@ -110,54 +122,68 @@ class Photo(models.Model):
 
 
 class Card(models.Model):
-    class StatusChoice(models.TextChoices):
-        SUCCESS = 'success', 'Успешно'
-        DENIED = 'denied', 'Отказано'
+    class SuccessChoice(models.TextChoices, metaclass=MetaStatusChoice):
+        SUCCESS = 'success', 'Принято'
+
+    class DeniedChoice(models.TextChoices, metaclass=MetaStatusChoice):
+        DENIED = 'denied', 'Отвергнуто'
+
+    class PendingChoice(models.TextChoices, metaclass=MetaStatusChoice):
         PENDING = 'pending', 'В процессе проверки'
+
+    class SendingChoice(models.TextChoices, metaclass=MetaStatusChoice):
         SENDING = 'sending', 'Отправлено'
 
+    StatusChoice = PendingChoice | SendingChoice | SuccessChoice | DeniedChoice
+    StatusChoiceWithOutSending = StatusChoice ^ SendingChoice
+
     card_uuid = models.UUIDField(primary_key=True)
-    status = models.TextField(choices=StatusChoice.choices)
-    datetime_creation = models.DateTimeField(auto_now_add=True)
-    execute_date = models.DateField()
-    datetime_inspection = models.DateTimeField(null=True, default=None)
+    status = models.TextField(choices=StatusChoice.choices, verbose_name="Статус")
+    datetime_creation = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
+    execute_date = models.DateField(verbose_name="Дата проведения работ")
+    datetime_inspection = models.DateTimeField(null=True, default=None, verbose_name="Время последней проверки")
     executor = models.ForeignKey('User', on_delete=models.PROTECT, related_name='exec_cards')
     inspector = models.ForeignKey('User', null=True, on_delete=models.PROTECT, related_name='inspect_cards')
     coordinates = models.ForeignKey('GeoPoint', on_delete=models.PROTECT, related_name='cards')
 
-    identification_pillar = models.JSONField()
+    identification_pillar = models.JSONField(verbose_name="Опознавательный столб")
 
-    monolith_one = models.JSONField()
-    monolith_two = models.JSONField()
-    monolith_three_and_four = models.JSONField()
-    sign_height_above_ground_level = models.FloatField()
-    outdoor_sign = models.JSONField()
+    monolith_one = models.JSONField(verbose_name="Монолит I")
+    monolith_two = models.JSONField(verbose_name="Монолит II")
+    monolith_three_and_four = models.JSONField(verbose_name="Монолиты III и IV")
+    sign_height_above_ground_level = models.FloatField(verbose_name="Высота верхней марки")
+    outdoor_sign = models.JSONField(verbose_name="Наружный знак")
 
-    ORP_one = models.JSONField()
-    ORP_two = models.JSONField()
+    ORP_one = models.JSONField(verbose_name="ОРП I")
+    ORP_two = models.JSONField(verbose_name="ОРП II")
 
-    trench = models.JSONField()
+    trench = models.JSONField(verbose_name="Окопка")
 
-    satellite_surveillance = models.JSONField()
+    satellite_surveillance = models.JSONField(verbose_name="Спутниковое наблюдение")
 
-    type_of_sign = models.JSONField()
+    type_of_sign = models.JSONField(verbose_name="Тип знака")
 
-    point_index = models.CharField(null=True, default=None)
-    name_point = models.CharField(null=True, default=None)
-    year_of_laying = models.IntegerField(null=True, default=None)
-    type_of_center = models.CharField(null=True, default=None)
-    height_above_sea_level = models.FloatField(null=True, default=None)
-    trapezoids = models.CharField(null=True, default=None)
+    point_index = models.CharField(null=True, default=None, blank=True, verbose_name="№ по каталогу/индекс пункта")
+    name_point = models.CharField(null=True, default=None, blank=True, verbose_name="Название пункта, класс, № марки")
+    year_of_laying = models.IntegerField(null=True, default=None, verbose_name="Год закладки")
+    type_of_center = models.CharField(null=True, default=None, blank=True, verbose_name="Тип центра")
+    height_above_sea_level = models.FloatField(null=True, default=None, blank=True,
+                                               verbose_name="Высота над уровнем моря")
+    trapezoids = models.CharField(null=True, default=None, blank=True, verbose_name="Трапеции")
 
     objects = managers.CardQueryset.as_manager()
 
     class Meta:
-        verbose_name = 'карточка'
-        verbose_name_plural = 'карточки'
+        verbose_name = 'карточка пункта ГГС'
+        verbose_name_plural = 'карточки пунктов ГГС'
 
     @property
     def photos_url(self):
         return [photo.path.url for photo in self.photos.all()]
+
+    @property
+    def print_status(self):
+        return dict(self.StatusChoice.choices).get(self.status, "")
 
     def __str__(self):
         return f'Card({self.execute_date})::Status({self.status})'
