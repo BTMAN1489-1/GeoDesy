@@ -5,7 +5,6 @@ from main_app.exceptions import ValidateError
 from main_app.exceptions import NotFoundAPIError
 from utils import data, context, card_tools
 from main_app.models import Card
-import re
 
 
 class BaseCardSerializer(serializers.Serializer):
@@ -14,7 +13,7 @@ class BaseCardSerializer(serializers.Serializer):
         try:
             dict_data = ujson.decode(primitive_value)
 
-        except ujson.JSONDecodeError:
+        except (ujson.JSONDecodeError, TypeError, ValueError):
             return empty
         else:
             return dict_data
@@ -44,7 +43,7 @@ class PropertySerializer(RecommendationSerializer, CommentSerializer):
 
 class TypeSignSerializer(PropertySerializer):
     value = serializers.ChoiceField(choices=card_tools.TypeSignChoice.choices)
-    properties = serializers.DictField(child=serializers.CharField(max_length=255), required=False)
+    properties = serializers.DictField(child=serializers.CharField(max_length=255), required=False, default={})
 
     def validate(self, attrs):
         choice_name = attrs["value"]
@@ -132,7 +131,8 @@ class CreateCardForUserSerializer(UserInput, PhotoSerializer, CardPropertiesSeri
 
 
 class CreateCardForStuffSerializer(UserInput, StuffInput, PhotoSerializer, CardPropertiesSerializer):
-    status = serializers.ChoiceField(choices=Card.StatusChoice.choices, default=Card.StatusChoice.SENDING, required=False)
+    status = serializers.ChoiceField(choices=Card.StatusChoice.choices, default=Card.StatusChoice.SENDING,
+                                     required=False)
 
     def create(self, validated_data):
         ctx = context.CurrentContext()
@@ -171,12 +171,12 @@ class UpdateCardForStuffSerializer(StuffInput):
         return update_card
 
 
-class SortedField(BaseCardSerializer):
+class SortedField(serializers.Serializer):
     field_name = serializers.ChoiceField(choices=card_tools.sorted_fields)
     reverse = serializers.BooleanField(required=False, default=False)
 
 
-class OwnedCardField(BaseCardSerializer):
+class OwnedCardField(serializers.Serializer):
     as_executor = serializers.BooleanField()
     as_inspector = serializers.BooleanField(required=False, default=False)
 
