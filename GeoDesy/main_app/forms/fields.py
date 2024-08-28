@@ -1,10 +1,5 @@
 from django import forms
-from main_app.exceptions import ValidateError
-
-from utils import card_tools
-import copy
-from main_app.forms import widgets
-
+from ajax_select.fields import AutoCompleteSelectField
 
 class CardPropertyBoundField(forms.BoundField):
     def value(self):
@@ -20,34 +15,14 @@ class CardPropertyBoundField(forms.BoundField):
 
 class CardPropertyField(forms.Field):
     def get_bound_field(self, form, field_name):
+
         return CardPropertyBoundField(form, self, field_name)
 
 
-class UserInfoField(forms.Field):
+class FederalSubjectField(AutoCompleteSelectField):
+    def get_bound_field(self, form, field_name):
+        self.initial = form.instance.coordinates.subject.pk
+        return super().get_bound_field(form, field_name)
 
-    widget = widgets.UserInfoWidget
-
-    def __init__(
-            self,
-            *,
-            label=None,
-            help_text="",
-            error_messages=None,
-            localize=False,
-            label_suffix=None,
-    ):
-        super().__init__(
-            required=False,
-            label=label,
-            initial=None,
-            help_text=help_text,
-            error_messages=error_messages,
-            show_hidden_initial=False,
-            validators=(),
-            localize=localize,
-            disabled=False,
-            label_suffix=label_suffix,
-            template_name=None,
-        )
 
 

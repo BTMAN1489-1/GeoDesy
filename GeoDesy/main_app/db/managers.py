@@ -29,9 +29,9 @@ class UserManager(BaseUserManager):
         extra_fields["is_staff"] = True
         extra_fields["is_superuser"] = True
         extra_fields.setdefault("is_active", True)
-        extra_fields.setdefault("first_name", "Boss")
-        extra_fields.setdefault("second_name", "")
-        extra_fields.setdefault("first_name", "")
+        extra_fields.setdefault("second_name", "I")
+        extra_fields.setdefault("first_name", "am")
+        extra_fields.setdefault("third_name", "Boss")
         extra_fields.setdefault("sex", self.model.Sex.UNKNOWN)
 
         return self.create_user(email, password, **extra_fields)
@@ -56,17 +56,17 @@ class TFAQuerySet(QuerySet):
 
 class MapQuerySet(QuerySet):
     def nearby_points(self, latitude: float, longitude: float, precision: float):
-        pattern_sql = \
-            """with select_by_latitudes as
+        pattern_sql = """
+with select_by_latitudes as
 (
     select * from public.main_app_geopoint
-    where abs({latitude:.10g}- latitude)<={precision:.30e}
+    where abs({latitude:.10g} - latitude)<={precision:.30e}
 ),
 select_by_longitudes as
 (
     select * from select_by_latitudes
     where (case 
-        when abs(latitude)< 90 - {precision:.30e} then abs({longitude:.10g} - longitude) <= {precision:.30e} /cosd(latitude)
+        when abs(latitude) < 90 then abs({longitude:.10g} - longitude) <= {precision:.30e} / cosd(latitude)
             else true
         end
         )
@@ -79,33 +79,39 @@ select * from select_by_longitudes;
 
     def _get_min_point_by_distance(self, latitude, longitude, subject_id):
         coord = geo.Coord(latitude=latitude, longitude=longitude)
-        radius = config.MIN_RADIUS_BETWEEN_POINTS
-        precision, _ = geo.Geometry.get_precision_by_length(length=radius, coord=coord)
-        points = self.nearby_points(latitude, longitude, precision)
+        radius = config.MIN_DISTANCE_BETWEEN_POINTS
+        precision = geo.Geometry.get_precision_by_length(length=radius)
+        points = self.nearby_points(coord.degrees.latitude, coord.degrees.longitude, precision)
         if len(points) > 0:
             center_point = geo.Point(coord)
             min_distance = float("inf")
             min_point_by_distance = points[0]
+
+            iter_coord = geo.Coord(0, 0)
+            iter_point = geo.Point(iter_coord)
+
             for p in points:
-                iter_coord = geo.Coord(p.latitude, p.longitude)
-                iter_point = geo.Point(iter_coord)
+                iter_coord.update(p.latitude, p.longitude)
+                iter_point.update(iter_coord)
                 distance = round(geo.Geometry.arc_length(center_point, iter_point), 2)
                 if distance < min_distance:
                     min_distance = distance
                     min_point_by_distance = p
                 elif distance == min_distance:
-                    if p.subject_id == subject_id:
+                    if p.pk == subject_id:
                         min_point_by_distance = p
 
             return min_point_by_distance
 
-    def create(self, latitude: float, longitude: float, subject_id):
-        point = self._get_min_point_by_distance(latitude, longitude, subject_id)
+        return None
 
+    def create(self, latitude: float, longitude: float, subject_code):
+        point = self._get_min_point_by_distance(latitude, longitude, subject_code)
         if point is None:
-            point = self.model(guid=uuid.uuid4(), latitude=latitude, longitude=longitude, subject_id=subject_id)
+            point = self.model(guid=uuid.uuid4(), latitude=round(latitude, 10), longitude=round(longitude, 10),
+                               subject_id=subject_code)
 
-        point.save()
+            point.save()
         return point
 
 
@@ -185,9 +191,9 @@ class CardQueryset(QuerySet):
         result_list = []
         result = {"cards": result_list, "count": count_rows}
 
-        to_representation = card_tools.to_representation
+        card_to_dict = card_tools.card_to_dict
 
         for card in query_set:
-            result_list.append(to_representation(user, card, displayed_fields))
+            result_list.append(card_to_dict(user, card, displayed_fields))
 
         return result

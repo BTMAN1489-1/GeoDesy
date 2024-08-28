@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from rest_framework.fields import empty
 import ujson
@@ -13,7 +15,7 @@ class BaseCardSerializer(serializers.Serializer):
         try:
             dict_data = ujson.decode(primitive_value)
 
-        except (ujson.JSONDecodeError, TypeError, ValueError):
+        except ujson.JSONDecodeError:
             return empty
         else:
             return dict_data
@@ -41,14 +43,14 @@ class PropertySerializer(RecommendationSerializer, CommentSerializer):
         return value
 
 
-class TypeSignSerializer(PropertySerializer):
+class TypeSignSerializer(BaseCardSerializer):
     value = serializers.ChoiceField(choices=card_tools.TypeSignChoice.choices)
     properties = serializers.DictField(child=serializers.CharField(max_length=255), required=False, default={})
 
     def validate(self, attrs):
         choice_name = attrs["value"]
         choice = card_tools.TypeSignChoice[choice_name]
-        sub_choices = choice.sub_choices
+        sub_choices = choice.sub_items
         raw_data = attrs.pop("properties")
         properties = {}
         for key, value in sub_choices.items():
@@ -137,7 +139,7 @@ class CreateCardForStuffSerializer(UserInput, StuffInput, PhotoSerializer, CardP
     def create(self, validated_data):
         ctx = context.CurrentContext()
         user = ctx.user
-        card = Card.objects.create(user, inspector=user, **validated_data)
+        card = Card.objects.create(user, inspector=user, datetime_inspection=datetime.utcnow(), **validated_data)
         return card
 
 
@@ -207,3 +209,5 @@ class ShowCardSerializer(serializers.Serializer):
 
         ctx.response = Card.objects.card_info(user, **validated_data)
         return user
+
+

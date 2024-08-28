@@ -11,6 +11,7 @@ urlpatterns = [
     path('card/create/', cards.CreateCardAPIView.as_view()),
     path('map/points/', geo_points.GeoPointAPIView.as_view()),
     path('card/create/', cards.CreateCardAPIView.as_view()),
-    path('card/update/', cards.UpdateCardAPIView.as_view()),
+    # path('card/update/', cards.UpdateCardAPIView.as_view()),
     path('card/info/', cards.ShowCardAPIView.as_view()),
+    path('card/download/<uuid:card_uuid>/', cards.DownloadCardPDF.as_view(), name="download_card"),
 ]

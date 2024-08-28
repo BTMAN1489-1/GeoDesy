@@ -1,10 +1,7 @@
 from rest_framework.parsers import MultiPartParser, DataAndFiles
 from django.conf import settings
 from django.http.multipartparser import MultiPartParser as DjangoMultiPartParser
-from django.http.multipartparser import MultiPartParserError
-from rest_framework.exceptions import ParseError
 from . import handlers
-from main_app.exceptions import BadEnterAPIError
 
 
 class LimitedMultiPartParser(MultiPartParser):

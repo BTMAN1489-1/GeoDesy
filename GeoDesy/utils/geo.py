@@ -1,7 +1,6 @@
 import math
-from collections import namedtuple
 
-R = 6371300
+R = 6371300  # радиус Земли в метрах
 
 
 class Coord:
@@ -10,11 +9,39 @@ class Coord:
             self.latitude = latitude
             self.longitude = longitude
 
+        @property
+        def latitude(self):
+            return self._latitude
+
+        @latitude.setter
+        def latitude(self, value: float):
+            self._latitude = round(value, 10)
+
+        @property
+        def longitude(self):
+            return self._longitude
+
+        @longitude.setter
+        def longitude(self, value: float):
+            self._longitude = round(value, 10)
+
+        def as_tuple(self):
+            return self.latitude, self.longitude
+
+    @staticmethod
+    def assert_coord(latitude, longitude):
+        assert abs(latitude) <= 90
+        assert abs(longitude) <= 180
+
     def __init__(self, latitude, longitude):
+        self.assert_coord(latitude, longitude)
+
         self._deg_coord = self._Coordination(latitude, longitude)
         self._rad_coord = self._Coordination(math.radians(latitude), math.radians(longitude))
 
     def update(self, latitude, longitude):
+        self.assert_coord(latitude, longitude)
+
         self.radians.latitude = math.radians(latitude)
         self.radians.longitude = math.radians(longitude)
 
@@ -43,14 +70,11 @@ class Point:
     def __init__(self, coord: Coord):
         self.x, self.y, self.z = _get_point(coord)
 
-    def __len__(self):
-        return math.sqrt(pow(self.x, 2) + pow(self.y, 2) + pow(self.z, 2))
-
     def update(self, coord: Coord):
         self.x, self.y, self.z = _get_point(coord)
 
-    def len(self):
-        return self.__len__()
+    def norm(self):
+        return math.sqrt(pow(self.x, 2) + pow(self.y, 2) + pow(self.z, 2))
 
     def __str__(self):
         return f"({self.x}, {self.y}, {self.z})"
@@ -72,22 +96,33 @@ class Geometry:
 
     @classmethod
     def arc_length(cls, point1: Point, point2: Point):
-        len1 = point1.len()
-        len2 = point2.len()
-        if len1 == 0 or len2 == 0:
-            return 0
+        len1 = point1.norm()
+        len2 = point2.norm()
+        assert len1 != 0 and len2 != 0, "Для вычисления длины дуги векторы должны иметь невырожденную норму"
         return R * math.acos(point1 * point2 / (len1 * len2))
 
     @classmethod
-    def get_precision_by_length(cls, length: float, coord: Coord, in_radians=False):  # length указывается в метрах
-        if length <= cls._MAX_LENGTH:
-            lat_precision = length * cls._CURVATURE  # отклонению 1/R радиан соответствует расстояние 1 метр
-            if abs(coord.degrees.latitude) < 90:
-                long_precision = lat_precision / math.cos(coord.radians.latitude)  # поправка на широту
-                if in_radians:
-                    return lat_precision, long_precision
-                else:
-                    return math.degrees(lat_precision), math.degrees(long_precision)
-            return 0, 0  # на полюсах все меридианы сходятся в точку
+    def get_precision_by_length(cls, length: float, in_radians: bool = False) -> float:
+        # length указывается в метрах
+        assert length >= 0, "Длина должна быть неотрицательна"
+        assert length <= cls._MAX_LENGTH, f"Поле length должно быть не больше {cls._MAX_LENGTH}."
+
+        precision = length * cls._CURVATURE  # отклонению 1/R радиан соответствует расстояние 1 метр
+        if in_radians:
+            return precision
         else:
-            raise ValueError(f"Поле length должно быть не больше {cls._MAX_LENGTH}.")
+            return math.degrees(precision)
+
+    @classmethod
+    def correct_precision_by_latitude(cls, coord: Coord, precision: float, in_radians: bool = False) -> float:
+        assert precision >= 0
+
+        if coord.degrees.latitude < 90:
+            corrected_precision = precision / math.cos(coord.radians.latitude)
+            if in_radians:
+                return corrected_precision
+            else:
+                return math.degrees(corrected_precision)
+
+        else:
+            return 0

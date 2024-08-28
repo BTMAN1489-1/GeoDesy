@@ -33,23 +33,6 @@ class RecommendationWidget(forms.Textarea):
         }
 
 
-class TypeOfSignWidget(RecommendationWidget):
-    def _prepare_value(self, value):
-        property_name = value.get("value", "")
-        property_ = card_tools.TypeSignChoice[property_name].value
-        description = [(property_.value, property_.label.capitalize())]
-        sub_properties = property_.sub_items
-        for key, array_item in sub_properties.items():
-            sub_property_name = value["properties"].get(key, "")
-            sub_property = array_item[sub_property_name]
-            sub_property_label = f"{array_item.label.capitalize()} {sub_property.label}"
-            description.append((key, sub_property_label))
-
-        new_value = {"value": description, "label": "Описание"}
-
-        return new_value
-
-
 class CardPropertyWidget(RecommendationWidget):
 
     def __init__(self, /, class_property, **kwargs):
@@ -62,17 +45,8 @@ class CardPropertyWidget(RecommendationWidget):
     def _prepare_value(self, value):
         property_name = value.get("value", "")
         property_ = self._get_property(property_name)
-        description = [(property_.value, property_.label.capitalize())]
+        description = [property_.label.capitalize()]
 
         new_value = {"value": description, "label": "Состояние"}
 
         return new_value
-
-
-class UserInfoWidget(forms.Widget):
-
-    template_name = "admin/main_app/card/widgets/user_info.html"
-
-    def get_context(self, name, value, attrs):
-        ...
-        return super().get_context(name, value, attrs)

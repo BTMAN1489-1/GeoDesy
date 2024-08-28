@@ -46,9 +46,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'drf_spectacular_sidecar',
-    'admin_extra_buttons',
     'main_app',
     'django.contrib.admin',
+    "dalf",
+    "ajax_select"
 ]
 
 MIDDLEWARE = [
@@ -169,8 +170,8 @@ EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = True
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608
-DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
+FILE_UPLOAD_MAX_MEMORY_SIZE = 4194304
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12582912
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"

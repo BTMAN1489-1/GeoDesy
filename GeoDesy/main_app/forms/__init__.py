@@ -1,15 +1,12 @@
 import datetime
-
 from django import forms
 from utils import card_tools
-from .widgets import TypeOfSignWidget, CardPropertyWidget
-from .fields import CardPropertyField, UserInfoField
+from .widgets import CardPropertyWidget
+from .fields import CardPropertyField, FederalSubjectField
 from main_app.models import Card
 
 
 class CardForm(forms.ModelForm):
-    type_of_sign = CardPropertyField(widget=TypeOfSignWidget, label="Тип знака", required=False)
-
     status = forms.ChoiceField(widget=forms.RadioSelect, label="Изменить статус заявки", required=True,
                                initial=Card.PendingChoice.PENDING,
                                choices=Card.StatusChoiceWithOutSending.choices)
@@ -50,7 +47,8 @@ class CardForm(forms.ModelForm):
                                                       help_text="Высота может быть и отрицательной. Данный параметр скорее показывает отклонение относительно уровня земли.",
                                                       disabled=True, required=False)
 
-    # height_above_sea_level = forms.FloatField(min_value=0, label="Высота над уровнем моря", required=False)
+    subject = FederalSubjectField('subjects', label="Субъект РФ", help_text="Начните ввод для поиска",
+                                  show_help_text=False)
 
     def _clean_fields(self):
         for name, bf in self._bound_items():

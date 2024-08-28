@@ -20,8 +20,13 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from ajax_select import urls as ajax_select_urls
+
+
+admin.autodiscover()
 
 urlpatterns = [
+    path("admin/lookups/", include(ajax_select_urls)),
     path('admin/', admin.site.urls),
     path('api/', include("main_app.api_urls")),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -29,8 +34,7 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('favicon.ico', lambda _: redirect('static/icons/favicon.ico', permanent=True)),
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 admin.site.site_header = 'GeoDesy corp.'

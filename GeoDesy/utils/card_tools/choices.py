@@ -1,63 +1,9 @@
 import enum
 from django.db import models
 
-displayed_Card_fields = {"status", "execute_date", "identification_pillar",
-                         "monolith_one", "monolith_two", "monolith_three_and_four", "sign_height_above_ground_level",
-                         "outdoor_sign", "ORP_one", "ORP_two", "trench", "satellite_surveillance", "type_of_sign",
-                         "point_index", "name_point", "year_of_laying", "type_of_center", "height_above_sea_level",
-                         "trapezoids", "datetime_creation", "datetime_inspection"}
-
-displayed_GeoPoint_fields = {"latitude", "longitude", "federal_subject", "federal_district"}
-displayed_Photo_fields = {"photos"}
-owners = {"executor", "inspector"}
-displayed_fields = displayed_Card_fields | displayed_GeoPoint_fields | owners | displayed_Photo_fields
-
-sorted_fields = {"datetime_creation", "datetime_inspection"}
-
-mapper_related_GeoPoint_fields = {"latitude": "coordinates__latitude", "longitude": "coordinates__longitude"}
-
-mapper_related_Federal_fields = {"federal_subject": "coordinates__subject__name",
-                                 "federal_district": "coordinates__subject__district__name"
-                                 }
-
-mapper_related_fields = mapper_related_Federal_fields | mapper_related_GeoPoint_fields
-
-reverse_mapper_related_fields = {"latitude": "coordinates__latitude", "longitude": "coordinates__longitude",
-                                 "federal_subject": "coordinates__subject__name",
-                                 "federal_district": "coordinates__subject__district__name"
-                                 }
-
-
-def to_representation(user, card, allow_fields):
-    if allow_fields is None:
-        allow_fields = displayed_fields
-    else:
-        allow_fields = set(allow_fields)
-
-    coordinates = {}
-    result = {"card_uuid": card.card_uuid}
-    card_fields = displayed_Card_fields
-    geo_fields = displayed_GeoPoint_fields
-    owner_fields = owners
-    for field in allow_fields:
-        if field in card_fields:
-            result[field] = getattr(card, field)
-        elif field in owner_fields:
-            owner = getattr(card, field)
-            to_dict = getattr(owner, "to_dict", lambda x: None)
-            result[field] = to_dict(user.is_staff)
-
-        elif field in geo_fields:
-            geo_point = getattr(card, "coordinates")
-            coordinates[field] = getattr(geo_point, field)
-
-        else:
-            result[field] = getattr(card, "photos_url")
-
-    if coordinates:
-        result["coordinates"] = coordinates
-
-    return result
+__all__ = ("TypeSignChoice", "CardChoices", "DetectedPropertyChoice", "SavingPropertyChoice",
+           "CoveringPropertyChoice", "ReadingPropertyChoice",
+           "PossiblePropertyChoice")
 
 
 class Item:
@@ -92,9 +38,9 @@ class Item:
 class ArrayItem:
     def __init__(self, label: str, *items: Item):
         self._label = label
-        new_items = self._items = dict((item.value, item)for item in items)
+        new_items = self._proxy_items = dict((item.value, item) for item in items)
         self._values = tuple(new_items.keys())
-        self._labels = tuple(new_items.values())
+        self._items = tuple(new_items.values())
 
     def __str__(self):
         return f"{self._items}"
@@ -107,8 +53,8 @@ class ArrayItem:
         return self._label
 
     @property
-    def labels(self):
-        return self._labels
+    def items(self):
+        return self._items
 
     @property
     def values(self):
@@ -116,6 +62,10 @@ class ArrayItem:
 
     def __len__(self):
         return len(self._items)
+
+    def printable_item(self, item_name):
+        item_label = self[item_name]
+        return f"{self._label} {item_label}"
 
     def __iter__(self):
         return iter(self._items)
@@ -127,10 +77,10 @@ class ArrayItem:
             return item in self._values
 
     def __getitem__(self, item):
-        return self._items[item]
+        return self._proxy_items[item]
 
     def get(self, item, default=None):
-        return self._items.get(item, default)
+        return self._proxy_items.get(item, default)
 
 
 class MetaChoice(enum.EnumType):
@@ -143,20 +93,14 @@ class MetaChoice(enum.EnumType):
 
         return result
 
-    def __getitem__(cls, item):
-        return vars(cls)[item]
-
-    def get(cls,  item, default=None):
-        return vars(cls).get(item, default)
+    def __getitem__(cls, key):
+        attr = super().__getitem__(key)
+        return attr.value
 
 
 class Choice(enum.Enum, metaclass=MetaChoice):
     def __str__(self):
         return f"{self.value}"
-
-    @property
-    def sub_choices(self):
-        return self.value.sub_items
 
 
 class TypeSignChoice(Choice):
@@ -195,32 +139,6 @@ class TypeSignChoice(Choice):
     no_sign = Item("no_sign", "знак отсутствует")
 
 
-class DetectedPropertyChoice(models.TextChoices):
-    DETECTED = "detected", "обнаружен"
-    UNDETECTED = "undetected", "не обнаружен"
-
-
-class SavingPropertyChoice(models.TextChoices):
-    SAVED = "saved", "сохранился"
-    UNSAVED = "unsaved", "не сохранился"
-
-
-class CoveringPropertyChoice(models.TextChoices):
-    COVERED = "covered", "не вскрывался"
-    UNCOVERED = "uncovered", "вскрывался"
-
-
-class ReadingPropertyChoice(models.TextChoices):
-    READABLE = "readable", "читается"
-    UNREADABLE = "unreadable", "не читается"
-
-
-class PossiblePropertyChoice(models.TextChoices):
-    POSSIBLE = "possible", "возможно"
-    CONDITIONALLY_POSSIBLE = "conditionally_possible", "условно возможно"
-    IMPOSSIBLE = "impossible", "невозможно"
-
-
 class MetaStatusChoice(models.enums.ChoicesType):
 
     @classmethod
@@ -241,7 +159,7 @@ class MetaStatusChoice(models.enums.ChoicesType):
             value = values.pop(0)
             if name not in unique_filter:
                 result.append((name, value))
-            unique_filter.add(name)
+                unique_filter.add(name)
 
         return result
 
@@ -271,3 +189,33 @@ class MetaStatusChoice(models.enums.ChoicesType):
         new_class = cls._result_operation(other, new_class_name, filter_names)
 
         return new_class
+
+
+class CardChoices(models.TextChoices, metaclass=MetaStatusChoice):
+    pass
+
+
+class DetectedPropertyChoice(CardChoices):
+    DETECTED = "detected", "обнаружен"
+    UNDETECTED = "undetected", "не обнаружен"
+
+
+class SavingPropertyChoice(CardChoices):
+    SAVED = "saved", "сохранился"
+    UNSAVED = "unsaved", "не сохранился"
+
+
+class CoveringPropertyChoice(CardChoices):
+    COVERED = "covered", "не вскрывался"
+    UNCOVERED = "uncovered", "вскрывался"
+
+
+class ReadingPropertyChoice(CardChoices):
+    READABLE = "readable", "читается"
+    UNREADABLE = "unreadable", "не читается"
+
+
+class PossiblePropertyChoice(CardChoices):
+    POSSIBLE = "possible", "возможно"
+    CONDITIONALLY_POSSIBLE = "conditionally_possible", "условно возможно"
+    IMPOSSIBLE = "impossible", "невозможно"

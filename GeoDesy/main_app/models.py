@@ -1,11 +1,9 @@
-import enum
-
 from django.db import models
 from main_app.db import managers
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from utils.custom_validators import validate_russian_text
-from utils.card_tools import MetaStatusChoice
-from django.utils import formats
+from utils.card_tools import CardChoices, printable_coordinates
+from django.conf import settings
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -59,22 +57,30 @@ class User(AbstractBaseUser, PermissionsMixin):
 class FederalDistrict(models.Model):
     name = models.TextField(unique=True)
 
+    def __str__(self):
+        return self.name
+
 
 class FederalSubject(models.Model):
-    subject_code = models.IntegerField(primary_key=True)
-    name = models.TextField(unique=True)
-    district = models.ForeignKey('FederalDistrict', on_delete=models.PROTECT, related_name='subjects')
+    id = models.IntegerField(primary_key=True, verbose_name='ID')
+    name = models.TextField(unique=True, verbose_name="Субъект РФ")
+    district = models.ForeignKey('FederalDistrict', on_delete=models.PROTECT, related_name='subjects', verbose_name="Федеральный округ РФ")
+
+    def __str__(self):
+        return self.name
 
 
 class GeoPoint(models.Model):
     guid = models.UUIDField(primary_key=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
-    subject = models.ForeignKey('FederalSubject', on_delete=models.PROTECT, related_name='geo_points')
+    subject = models.ForeignKey('FederalSubject', on_delete=models.PROTECT, related_name='geo_points', verbose_name="Субъект РФ")
 
     objects = managers.MapQuerySet.as_manager()
 
     class Meta:
+        verbose_name = 'координаты'
+        verbose_name_plural = 'координаты'
         constraints = [
             models.UniqueConstraint(fields=('latitude', 'longitude'), name='unique_coordinates'),
         ]
@@ -88,7 +94,7 @@ class GeoPoint(models.Model):
         return self.subject.district.name
 
     def __str__(self):
-        return f"GeoPoint([{self.latitude}, {self.longitude}], {self.guid})"
+        return "     ".join(printable_coordinates(self))
 
 
 class TFA(models.Model):
@@ -116,22 +122,26 @@ class Photo(models.Model):
     path = models.ImageField(upload_to="photos/%Y/%m/%d")
     card_ref = models.ForeignKey("Card", on_delete=models.PROTECT, related_name='photos')
 
+    @property
+    def absolute_path(self):
+        return settings.MEDIA_ROOT / self.path.name
+
     class Meta:
         verbose_name = 'фотография'
         verbose_name_plural = 'фотографии'
 
 
 class Card(models.Model):
-    class SuccessChoice(models.TextChoices, metaclass=MetaStatusChoice):
+    class SuccessChoice(CardChoices):
         SUCCESS = 'success', 'Принято'
 
-    class DeniedChoice(models.TextChoices, metaclass=MetaStatusChoice):
+    class DeniedChoice(CardChoices):
         DENIED = 'denied', 'Отвергнуто'
 
-    class PendingChoice(models.TextChoices, metaclass=MetaStatusChoice):
+    class PendingChoice(CardChoices):
         PENDING = 'pending', 'В процессе проверки'
 
-    class SendingChoice(models.TextChoices, metaclass=MetaStatusChoice):
+    class SendingChoice(CardChoices):
         SENDING = 'sending', 'Отправлено'
 
     StatusChoice = PendingChoice | SendingChoice | SuccessChoice | DeniedChoice
@@ -139,12 +149,12 @@ class Card(models.Model):
 
     card_uuid = models.UUIDField(primary_key=True)
     status = models.TextField(choices=StatusChoice.choices, verbose_name="Статус")
-    datetime_creation = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
+    datetime_creation = models.DateTimeField(auto_now_add=True, verbose_name="Время создания (UTC-формат)")
     execute_date = models.DateField(verbose_name="Дата проведения работ")
-    datetime_inspection = models.DateTimeField(null=True, default=None, verbose_name="Время последней проверки")
+    datetime_inspection = models.DateTimeField(null=True, default=None, verbose_name="Время последней проверки (UTC-формат)")
     executor = models.ForeignKey('User', on_delete=models.PROTECT, related_name='exec_cards')
     inspector = models.ForeignKey('User', null=True, on_delete=models.PROTECT, related_name='inspect_cards')
-    coordinates = models.ForeignKey('GeoPoint', on_delete=models.PROTECT, related_name='cards')
+    coordinates = models.ForeignKey('GeoPoint', on_delete=models.PROTECT, related_name='cards', verbose_name="Координаты")
 
     identification_pillar = models.JSONField(verbose_name="Опознавательный столб")
 
@@ -186,4 +196,4 @@ class Card(models.Model):
         return dict(self.StatusChoice.choices).get(self.status, "")
 
     def __str__(self):
-        return f'Card({self.execute_date})::Status({self.status})'
+        return f'Карточка/{self.pk}'

@@ -6,7 +6,7 @@
 
         <td class="table-td-value">
             <div class="flex-container description-property">
-                {% for key, value in widget.value.description.value %}
+                {% for value in widget.value.description.value %}
                     <span class="description-item">{{ value }}</span>
                 {% endfor %}
             </div>
