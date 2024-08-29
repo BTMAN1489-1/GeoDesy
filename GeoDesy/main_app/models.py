@@ -162,6 +162,7 @@ class Card(models.Model):
     monolith_two = models.JSONField(verbose_name="Монолит II")
     monolith_three_and_four = models.JSONField(verbose_name="Монолиты III и IV")
     sign_height_above_ground_level = models.FloatField(verbose_name="Высота верхней марки")
+    sign_height = models.FloatField(verbose_name="Высота знака")
     outdoor_sign = models.JSONField(verbose_name="Наружный знак")
 
     ORP_one = models.JSONField(verbose_name="ОРП I")

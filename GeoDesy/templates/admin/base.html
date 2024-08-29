@@ -21,7 +21,10 @@
     {% if LANGUAGE_BIDI %}<link rel="stylesheet" href="{% static "admin/css/responsive_rtl.css" %}">{% endif %}
 {% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
-<script src="https://api-maps.yandex.ru/2.1/?apikey=b0d94892-82a1-4acb-b7da-869ce0ad0589&lang=ru_RU"></script>
+
+
+<script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
+
 </head>
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"

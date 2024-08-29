@@ -11,7 +11,9 @@ from main_app.models import Card
 
 class BaseCardSerializer(serializers.Serializer):
     def get_value(self, dictionary):
-        primitive_value = dictionary.get(self.field_name, empty)
+        primitive_value = dictionary.get(self.field_name, None)
+        if primitive_value is None:
+            return empty
         try:
             dict_data = ujson.decode(primitive_value)
 
@@ -21,11 +23,11 @@ class BaseCardSerializer(serializers.Serializer):
             return dict_data
 
 
-class CommentSerializer(BaseCardSerializer):
+class CommentSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, default=None)
 
 
-class RecommendationSerializer(BaseCardSerializer):
+class RecommendationSerializer(serializers.Serializer):
     recommendation = serializers.CharField(required=False, default=None)
 
     def validate_recommendation(self, value):
@@ -34,7 +36,7 @@ class RecommendationSerializer(BaseCardSerializer):
         return value
 
 
-class PropertySerializer(RecommendationSerializer, CommentSerializer):
+class PropertySerializer(BaseCardSerializer, RecommendationSerializer, CommentSerializer):
     def validate_recommendation(self, value):
         ctx = context.CurrentContext()
         user = ctx.user
@@ -95,6 +97,13 @@ class UserInput(serializers.Serializer):
     latitude = serializers.FloatField(min_value=-90, max_value=90)
     longitude = serializers.FloatField(min_value=-180, max_value=180)
     sign_height_above_ground_level = serializers.FloatField()
+    sign_height = serializers.FloatField(min_value=0)
+
+    def validate_sign_height_above_ground_level(self, value: float):
+        return round(value, 2)
+
+    def validate_sign_height(self, value: float):
+        return round(value, 2)
 
 
 class PhotoSerializer(serializers.Serializer):
@@ -110,7 +119,7 @@ class StuffInput(serializers.Serializer):
     trapezoids = serializers.CharField(required=False)
 
 
-class CardPropertiesSerializer(BaseCardSerializer):
+class CardPropertiesSerializer(serializers.Serializer):
     identification_pillar = DetectedProperty()
     type_of_sign = TypeSignSerializer()
     monolith_one = SavingProperty()
@@ -209,5 +218,3 @@ class ShowCardSerializer(serializers.Serializer):
 
         ctx.response = Card.objects.card_info(user, **validated_data)
         return user
-
-

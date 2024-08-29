@@ -3,7 +3,7 @@ from drf_spectacular.views import extend_schema
 from drf_spectacular.utils import OpenApiTypes, OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema_field
 from rest_framework import status
 from rest_framework.parsers import JSONParser
-
+from rest_framework.views import APIView
 from main_app.views.v1 import JWT
 from main_app.serializers.v1 import cards
 from utils.upload_files.parsers import LimitedMultiPartParser
@@ -23,7 +23,8 @@ class CreateCardMock(JWT.JWTAuthenticationAPIView):
                                  'photos=@some_photo2.png;type=image/png\n'
                                  'photos=@some_photo3.png;type=image/png\n'
                                  'monolith_two={"recommendation":"string","comment":"string","value":"covered"}\n'
-                                 'sign_height_above_ground_level=0.23\n'
+                                 'sign_height_above_ground_level=-0.23\n'
+                                 'sign_height=4.7\n'
                                  'federal_subject=Белгородская область\n'
                                  'latitude=90\n'
                                  'trench={"recommendation":"string","comment":"string","value":"readable"}\n'
@@ -166,6 +167,16 @@ class ShowCardMock(JWT.JWTAuthenticationAPIView):
         ...
 
 
+class DownloadCardPDFMock(APIView):
+
+    @extend_schema(
+        tags=["Карточки ГГС"],
+        summary="Загрузка PDF"
+    )
+    def get(self, request):
+        ...
+
+
 class UpdateCardMock(JWT.JWTAuthenticationAPIView):
     @extend_schema(
         tags=["Карточки ГГС"],
@@ -175,6 +186,13 @@ class UpdateCardMock(JWT.JWTAuthenticationAPIView):
     )
     def post(self, request):
         ...
+
+
+class DownloadCardPDFSchema(OpenApiViewExtension):
+    target_class = 'main_app.views.v1.cards.DownloadCardPDF'
+
+    def view_replacement(self):
+        return DownloadCardPDFMock
 
 
 class CreateCardSchema(OpenApiViewExtension):

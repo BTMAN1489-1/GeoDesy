@@ -8,6 +8,6 @@ class GeoPointAPIView(APIView):
 
     @InContextAPI()
     def post(self, request):
-        serializer = map.GeoPointSerializer(data=request.data)
+        serializer = geo_points.GeoPointSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.get_response())

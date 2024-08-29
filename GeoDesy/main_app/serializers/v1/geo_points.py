@@ -14,8 +14,8 @@ class GeoPointSerializer(serializers.Serializer):
         radius = validated_data["radius"]
 
         coord = Coord(latitude=latitude, longitude=longitude)
-        precision, _ = Geometry.get_precision_by_length(length=radius, coord=coord)
-        points = GeoPoint.objects.nearby_points(latitude, longitude, precision)
+        precision = Geometry.get_precision_by_length(length=radius)
+        points = GeoPoint.objects.nearby_points(coord.degrees.latitude, coord.degrees.longitude, precision)
 
         response = []
         for point in points:

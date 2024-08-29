@@ -44,13 +44,13 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'rest_framework',
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
     'main_app',
     'django.contrib.admin',
     "dalf",
     "ajax_select"
 ]
+if DEBUG:
+    INSTALLED_APPS.extend(['drf_spectacular', 'drf_spectacular_sidecar'])
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -170,8 +170,8 @@ EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = True
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 4194304
-DATA_UPLOAD_MAX_MEMORY_SIZE = 12582912
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
+DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"

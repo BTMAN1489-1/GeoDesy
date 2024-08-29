@@ -2,7 +2,8 @@ from django.utils.formats import localize
 from .data import displayed_fields, displayed_Card_fields, displayed_GeoPoint_fields, owners
 from .choices import TypeSignChoice
 
-__all__ = ("card_to_dict", "printable_type_of_sign", "printable_coordinates")
+__all__ = ("card_to_dict", "printable_type_of_sign", "printable_coordinates",
+           "printable_sign_height_above_ground_level")
 
 
 def card_to_dict(user, card, allow_fields):
@@ -59,3 +60,8 @@ def printable_coordinates(coord):
         "".join((latitude_sign, localize(abs(latitude)), u"\u00b0")),
         "".join((longitude_sign, localize(abs(longitude)), u"\u00b0")),
     ]
+
+
+def printable_sign_height_above_ground_level(sign_height_above_ground_level: float):
+    s = "Выше" if sign_height_above_ground_level >= 0 else "Ниже"
+    return f"{s} уровня земли на {localize(abs(sign_height_above_ground_level))}м"

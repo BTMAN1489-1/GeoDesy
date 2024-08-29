@@ -7,7 +7,7 @@ from fpdf.enums import TableSpan
 from main_app.models import Card
 from utils.pdf.helpers import *
 from django.utils.formats import localize
-from utils.card_tools import printable_coordinates, printable_type_of_sign
+from utils.card_tools import printable_coordinates, printable_type_of_sign, printable_sign_height_above_ground_level
 
 __all__ = (
     "BaseNode", "ExecuteDateNode", "InstitutionNode", "FederalSubjectNode", "ExecutorInfoNode", "CoordinatesNode",
@@ -123,7 +123,7 @@ class SignHeightNode(BaseNode):
     def to_representation(self):
         card_data = ctx_card_data.get()
         header = HeadingCellTemplate.replace(text="Высота знака")
-        value = ValueCellTemplate.replace(text=f"-")
+        value = ValueCellTemplate.replace(text=f"{localize(card_data.card.sign_height)}м")
         return header, value
 
 
@@ -170,8 +170,7 @@ class SignHeightAboveGroundLevelNode(BaseNode):
         card_data = ctx_card_data.get()
         header = HeadingCellTemplate.replace(text="Высота верхней марки")
         height = card_data.card.sign_height_above_ground_level
-        s = "Выше" if height >= 0 else "Ниже"
-        value = ValueCellTemplate.replace(text=f"{s} уровня земли на {localize(abs(height))}м")
+        value = ValueCellTemplate.replace(text=printable_sign_height_above_ground_level(height))
         return header, value
 
 

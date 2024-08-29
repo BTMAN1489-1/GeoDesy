@@ -1,12 +1,14 @@
 from django.contrib import admin
-from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils import formats
 from datetime import datetime
+
+from django.utils.formats import localize
+
 from main_app.forms import CardForm
-from main_app.models import Card
-from utils.card_tools import printable_type_of_sign
+from main_app.models import Card, User
+from utils.card_tools import printable_type_of_sign, printable_sign_height_above_ground_level
 from dalf.admin import DALFModelAdmin, DALFRelatedOnlyField
 
 
@@ -16,12 +18,35 @@ def _create_user_info_context(user, datetime_field):
     return context
 
 
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    fields = ("full_name", "email", "sex", "is_staff", "is_active")
+    readonly_fields = ("full_name", "email", "sex")
+
+    search_fields = ("email", "first_name", "second_name", "third_name")
+
+    list_filter = ("is_staff", "is_active")
+    list_display = ("full_name", "email")
+
+    @admin.display(description="ФИО")
+    def full_name(self, obj):
+        return obj.full_name
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Card)
 class CardAdmin(DALFModelAdmin):
     form = CardForm
-    readonly_fields = ("photos", "execution", "inspection", "geo_info", "type_of_sign_desc")
+    readonly_fields = ("photos", "execution", "inspection", "geo_info", "type_of_sign_desc",
+                       "sign_height_above_ground_level_info", "sign_height_info")
     fields = (
-        "photos", "subject", "geo_info", "execution", "inspection", "sign_height_above_ground_level",
+        "photos", "subject", "geo_info", "execution", "inspection", "sign_height_above_ground_level_info",
+        "sign_height_info",
         "type_of_sign_desc", "identification_pillar", "monolith_one", "monolith_two", "monolith_three_and_four",
         "outdoor_sign", "ORP_one", "ORP_two", "trench", "satellite_surveillance", "point_index", "name_point",
         "year_of_laying", "type_of_center", "height_above_sea_level", "trapezoids", "status",
@@ -39,6 +64,14 @@ class CardAdmin(DALFModelAdmin):
         if "_download_pdf" in request.POST:
             return redirect("download_card", obj.card_uuid)
         return super().response_change(request, obj)
+
+    @admin.display(description="Высота верхней марки")
+    def sign_height_above_ground_level_info(self, obj):
+        return printable_sign_height_above_ground_level(obj.sign_height_above_ground_level)
+
+    @admin.display(description="Высота знака")
+    def sign_height_info(self, obj):
+        return f"{localize(obj.sign_height)}м"
 
     @admin.display(description="Субъект РФ")
     def federal_subject(self, obj):
