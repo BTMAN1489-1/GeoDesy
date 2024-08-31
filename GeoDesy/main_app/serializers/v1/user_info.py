@@ -2,6 +2,10 @@ from rest_framework import serializers
 from main_app.models import User
 from utils.custom_validators import validate_russian_text
 
+__all__ = (
+    "UserInfoSerializer",
+)
+
 
 class UserInfoSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(validators=(validate_russian_text,))

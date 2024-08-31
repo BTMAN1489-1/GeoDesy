@@ -2,6 +2,10 @@ from rest_framework import serializers
 from utils.geo import Coord, Geometry
 from main_app.models import GeoPoint
 
+__all__ = (
+    "GeoPointSerializer",
+)
+
 
 class GeoPointSerializer(serializers.Serializer):
     latitude = serializers.FloatField(min_value=-90, max_value=90)

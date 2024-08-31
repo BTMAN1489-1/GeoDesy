@@ -1,9 +1,13 @@
 import datetime
 from django import forms
 from utils import card_tools
-from .widgets import CardPropertyWidget
-from .fields import CardPropertyField, FederalSubjectField
+from main_app.forms.widgets import *
+from main_app.forms.fields import *
 from main_app.models import Card
+
+__all__ = (
+    "CardForm",
+)
 
 
 class CardForm(forms.ModelForm):
@@ -41,11 +45,7 @@ class CardForm(forms.ModelForm):
         widget=CardPropertyWidget(class_property=card_tools.PossiblePropertyChoice),
         label="Спутниковое наблюдение на пункте", required=False)
 
-    year_of_laying = forms.IntegerField(min_value=1, max_value=datetime.date.today().year, label="Год закладки",
-                                        required=False)
-    sign_height_above_ground_level = forms.FloatField(label="Высота верхней марки",
-                                                      help_text="Высота может быть и отрицательной. Данный параметр скорее показывает отклонение относительно уровня земли.",
-                                                      disabled=True, required=False)
+    year_of_laying = forms.IntegerField(min_value=1, label="Год закладки", required=False)
 
     subject = FederalSubjectField('subjects', label="Субъект РФ", help_text="Начните ввод для поиска",
                                   show_help_text=False)

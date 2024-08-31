@@ -1,5 +1,9 @@
 from rest_framework import permissions
 
+__all__ = (
+    "StaffOnlyPermission",
+)
+
 
 class StaffOnlyPermission(permissions.BasePermission):
 

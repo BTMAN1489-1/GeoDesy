@@ -1,15 +1,19 @@
 from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.views import extend_schema
-from drf_spectacular.utils import OpenApiTypes, OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema_field
+from drf_spectacular.utils import OpenApiExample
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
-from main_app.views.v1 import JWT
+from main_app.views.v1.JWT import JWTAuthenticationAPIView
 from main_app.serializers.v1 import cards
 from utils.upload_files.parsers import LimitedMultiPartParser
 
+__all__ = (
+    "DownloadCardPDFSchema", "CreateCardSchema", "ShowCardSchema", "UpdateCardSchema"
+)
 
-class CreateCardMock(JWT.JWTAuthenticationAPIView):
+
+class CreateCardMock(JWTAuthenticationAPIView):
     parser_classes = (LimitedMultiPartParser, JSONParser)
 
     @extend_schema(
@@ -155,7 +159,7 @@ class CreateCardMock(JWT.JWTAuthenticationAPIView):
         ...
 
 
-class ShowCardMock(JWT.JWTAuthenticationAPIView):
+class ShowCardMock(JWTAuthenticationAPIView):
 
     @extend_schema(
         tags=["Карточки ГГС"],
@@ -177,7 +181,7 @@ class DownloadCardPDFMock(APIView):
         ...
 
 
-class UpdateCardMock(JWT.JWTAuthenticationAPIView):
+class UpdateCardMock(JWTAuthenticationAPIView):
     @extend_schema(
         tags=["Карточки ГГС"],
         summary="Обновление информации о карточке ГГС",

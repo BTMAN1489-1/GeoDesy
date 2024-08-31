@@ -103,7 +103,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.venv
+.venv/
+venv/
 #*/.env
 env/
 backend/venv/
@@ -140,3 +141,5 @@ commands_pybabel.txt
 middleware_example.py
 .db_passfile
 .pg_service.conf
+
+**/media/

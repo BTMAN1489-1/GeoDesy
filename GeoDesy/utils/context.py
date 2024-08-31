@@ -4,6 +4,10 @@ from functools import wraps
 from utils.algorithms import Singleton
 from utils.message_tools import EmailMessage
 
+__all__ = (
+    "TypeRequest", "ContextDescriptor", "CurrentContext", "set_api_context"
+)
+
 
 class TypeRequest(enum.Enum):
     API = enum.auto()
@@ -47,15 +51,13 @@ class CurrentContext(Singleton):
         return copy_context()
 
 
-class InContextAPI(Singleton):
+def set_api_context(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        ctx = CurrentContext()
+        ctx.type_request = TypeRequest.API
+        return func(*args, **kwargs)
 
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            ctx = CurrentContext()
-            ctx.type_request = TypeRequest.API
+    return wrapper
 
-            return func(*args, **kwargs)
-
-        return wrapper
 

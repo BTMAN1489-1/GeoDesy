@@ -2,6 +2,9 @@ from django.template import loader
 from django.utils.html import strip_tags, escape
 from django.core.mail import send_mail
 
+__all__ = (
+    "Message", "EmailMessage"
+)
 
 class Message:
     def __init__(self, user):

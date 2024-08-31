@@ -6,6 +6,10 @@ from main_app.models import Session
 from main_app.exceptions import InvalidTokenError, AuthenticationFailedAPIError
 from utils.context import CurrentContext
 
+__all__ = (
+    "JWTAuthentication",
+)
+
 
 class JWTAuthentication(authentication.BaseAuthentication):
 
@@ -20,12 +24,12 @@ class JWTAuthentication(authentication.BaseAuthentication):
                 current_datetime = datetime.utcnow()
                 expiration_datetime = datetime.fromisoformat(data["expiration_datetime"])
 
-                # if current_datetime <= expiration_datetime:
-                session = Session.objects.get(api_id=data['uuid'])
-                ctx = CurrentContext()
-                ctx.user = session.user
+                if current_datetime <= expiration_datetime:
+                    session = Session.objects.get(api_id=data['uuid'])
+                    ctx = CurrentContext()
+                    ctx.user = session.user
 
-                return ctx.user, session
+                    return ctx.user, session
 
             raise InvalidTokenError()
 

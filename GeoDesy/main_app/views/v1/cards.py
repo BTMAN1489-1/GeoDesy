@@ -1,10 +1,9 @@
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from main_app.serializers.v1 import cards
 from main_app.permissions import StaffOnlyPermission
-from .JWT import JWTAuthenticationAPIView
-from utils.context import InContextAPI, CurrentContext
+from main_app.views.base_view import BaseApiView
+from main_app.views.v1.JWT import JWTAuthenticationAPIView
+from utils.context import CurrentContext
 from utils.upload_files.parsers import LimitedMultiPartParser
 from django.http import HttpResponseNotFound, HttpResponse
 
@@ -13,11 +12,14 @@ from utils.pdf import CardPDF
 
 from ajax_select import register, LookupChannel
 
+__all__ = (
+    "CreateCardAPIView", "UpdateCardAPIView", "ShowCardAPIView", "DownloadCardPDF", "FederalSubjectLookup"
+)
+
 
 class CreateCardAPIView(JWTAuthenticationAPIView):
     parser_classes = (LimitedMultiPartParser,)
 
-    @InContextAPI()
     def post(self, request):
         ctx = CurrentContext()
         user = ctx.user
@@ -35,7 +37,6 @@ class CreateCardAPIView(JWTAuthenticationAPIView):
 class UpdateCardAPIView(JWTAuthenticationAPIView):
     permission_classes = (StaffOnlyPermission,)
 
-    @InContextAPI()
     def post(self, request):
         serializer = cards.UpdateCardForStuffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -45,7 +46,6 @@ class UpdateCardAPIView(JWTAuthenticationAPIView):
 
 class ShowCardAPIView(JWTAuthenticationAPIView):
 
-    @InContextAPI()
     def post(self, request):
         serializer = cards.ShowCardSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -54,7 +54,7 @@ class ShowCardAPIView(JWTAuthenticationAPIView):
         return Response(ctx.response)
 
 
-class DownloadCardPDF(APIView):
+class DownloadCardPDF(BaseApiView):
     def get(self, request, card_uuid):
         try:
 
@@ -71,7 +71,6 @@ class DownloadCardPDF(APIView):
 
 @register('subjects')
 class FederalSubjectLookup(LookupChannel):
-
     model = FederalSubject
 
     def get_query(self, q, request):

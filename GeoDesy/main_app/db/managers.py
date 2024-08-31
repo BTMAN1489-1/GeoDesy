@@ -6,7 +6,9 @@ import uuid
 import config
 from main_app import models
 from utils import auth_tools
-from utils import geo, data, card_tools
+from utils import geo, card_tools
+
+__all__ = ("UserManager", "SessionQuerySet", "TFAQuerySet", "MapQuerySet", "CardQueryset")
 
 
 class UserManager(BaseUserManager):
@@ -108,7 +110,8 @@ select * from select_by_longitudes;
     def create(self, latitude: float, longitude: float, subject_code):
         point = self._get_min_point_by_distance(latitude, longitude, subject_code)
         if point is None:
-            point = self.model(guid=uuid.uuid4(), latitude=round(latitude, 10), longitude=round(longitude, 10),
+            point = self.model(guid=uuid.uuid4(), latitude=round(latitude, config.COORD_ROUND_SCALE),
+                               longitude=round(longitude, config.COORD_ROUND_SCALE),
                                subject_id=subject_code)
 
             point.save()
@@ -118,7 +121,7 @@ select * from select_by_longitudes;
 class CardQueryset(QuerySet):
     def create(self, executor, /, federal_subject, latitude, longitude, photos, **kwargs):
         with transaction.atomic():
-            federal_subject_id = data.FEDERAL_SUBJECTS_DICT[federal_subject]
+            federal_subject_id = card_tools.FEDERAL_SUBJECTS_DICT[federal_subject]
             point = models.GeoPoint.objects.create(latitude, longitude, federal_subject_id)
             card = self.model(card_uuid=uuid.uuid4(), executor=executor, coordinates=point, **kwargs)
             card.save()

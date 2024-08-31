@@ -8,6 +8,7 @@ from utils.pdf.representation import *
 from utils.card_tools.data import CardData
 from utils.card_tools.choices import *
 from contextvars import copy_context
+from geodesy import settings
 
 __all__ = (
     "DynamicRowTable", "CardPDF"
@@ -80,10 +81,10 @@ class CardPDF(FPDF):
         ctx.run(self._create, CardData(obj_model))
 
     def setup_fonts(self):
-        self.add_font('DejaVu', '', './static/fonts/DejaVuSansCondensed.ttf')
-        self.add_font('DejaVu', 'B', './static/fonts/DejaVuSansCondensed-Bold.ttf')
-        self.add_font('DejaVu', 'I', './static/fonts/DejaVuSansCondensed-Oblique.ttf')
-        self.add_font('DejaVu', 'BI', './static/fonts/DejaVuSansCondensed-BoldOblique.ttf')
+        self.add_font('DejaVu', '', settings.BASE_DIR / 'static/fonts/DejaVuSansCondensed.ttf')
+        self.add_font('DejaVu', 'B', settings.BASE_DIR / 'static/fonts/DejaVuSansCondensed-Bold.ttf')
+        self.add_font('DejaVu', 'I', settings.BASE_DIR / 'static/fonts/DejaVuSansCondensed-Oblique.ttf')
+        self.add_font('DejaVu', 'BI', settings.BASE_DIR / 'static/fonts/DejaVuSansCondensed-BoldOblique.ttf')
 
     def setup_document(self):
         self.set_author(self.author)

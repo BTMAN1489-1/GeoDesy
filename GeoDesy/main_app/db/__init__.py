@@ -1,1 +1,1 @@
-from . import managers
+from main_app.db.managers import *

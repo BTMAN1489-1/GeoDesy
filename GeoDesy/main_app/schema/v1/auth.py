@@ -1,10 +1,16 @@
 from drf_spectacular.extensions import OpenApiAuthenticationExtension, OpenApiViewExtension
 from drf_spectacular.views import extend_schema
-from drf_spectacular.utils import OpenApiTypes, OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema_view
+from drf_spectacular.utils import OpenApiExample
 from rest_framework import status
-from main_app.views.v1 import JWT
+
+from main_app.views.base_view import BaseApiView
+from main_app.views.v1.JWT import JWTAuthenticationAPIView
 from main_app.schema import utils
 from main_app.serializers.v1 import TFA, authorization
+
+__all__ = (
+    "JWTAuthenticationScheme", "AuthorizationSchema", "ChangeAuthSchema", "ForgottenPasswordSchema", "UpdateJWTSchema"
+)
 
 
 class JWTAuthenticationScheme(OpenApiAuthenticationExtension):
@@ -19,7 +25,7 @@ class JWTAuthenticationScheme(OpenApiAuthenticationExtension):
         }
 
 
-class AuthorizationMock(JWT.APIView):
+class AuthorizationMock(BaseApiView):
 
     @extend_schema(
         tags=["Авторизация"],
@@ -45,7 +51,7 @@ class AuthorizationMock(JWT.APIView):
         ...
 
 
-class ChangeAuthMock(JWT.JWTAuthenticationAPIView):
+class ChangeAuthMock(JWTAuthenticationAPIView):
 
     @extend_schema(
         tags=["Авторизация"],
@@ -103,7 +109,7 @@ class ChangeAuthMock(JWT.JWTAuthenticationAPIView):
         ...
 
 
-class ForgottenPasswordMock(JWT.APIView):
+class ForgottenPasswordMock(BaseApiView):
 
     @extend_schema(
         tags=["Авторизация"],
@@ -148,7 +154,7 @@ class ForgottenPasswordMock(JWT.APIView):
         ...
 
 
-class UpdateJWTMock(JWT.APIView):
+class UpdateJWTMock(BaseApiView):
 
     @extend_schema(
         tags=["Авторизация"],

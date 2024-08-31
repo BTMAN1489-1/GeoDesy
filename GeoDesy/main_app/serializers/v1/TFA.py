@@ -6,6 +6,10 @@ from utils import auth_tools, algorithms, handlers, custom_validators
 from main_app.exceptions import NotFoundAPIError, AuthenticationFailedAPIError
 from utils.context import CurrentContext
 
+__all__ = (
+    "TwoFactoryAuthentication",
+)
+
 
 class TwoFactoryAuthentication(serializers.Serializer):
     tfa_token = serializers.CharField()

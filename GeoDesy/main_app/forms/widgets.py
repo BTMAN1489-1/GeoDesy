@@ -1,5 +1,8 @@
 from django import forms
-from utils import card_tools
+
+__all__ = (
+    "RecommendationWidget", "CardPropertyWidget"
+)
 
 
 class RecommendationWidget(forms.Textarea):

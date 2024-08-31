@@ -1,12 +1,15 @@
 from rest_framework.response import Response
 from main_app.serializers.v1 import geo_points
-from rest_framework.views import APIView
-from utils.context import InContextAPI
+
+from main_app.views.base_view import BaseApiView
+
+__all__ = (
+    "GeoPointAPIView",
+)
 
 
-class GeoPointAPIView(APIView):
+class GeoPointAPIView(BaseApiView):
 
-    @InContextAPI()
     def post(self, request):
         serializer = geo_points.GeoPointSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

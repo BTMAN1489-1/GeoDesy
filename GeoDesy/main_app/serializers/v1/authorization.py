@@ -9,6 +9,12 @@ from utils import auth_tools, custom_validators, algorithms, mocks
 from utils.context import CurrentContext
 from main_app.exceptions import NotFoundAPIError, BadEnterAPIError
 
+__all__ = (
+    "CreateAuthorizationSerializer", "UpdateJWTSerializer", "CreateChangeAuthSerializer",
+    "CreateChangeAuthSerializer", "UpdateChangeAuthSerializer", "CreateForgottenPasswordSerializer",
+    "UpdateForgottenPasswordSerializer"
+)
+
 
 class CreateAuthorizationSerializer(serializers.Serializer):
     email = serializers.EmailField()

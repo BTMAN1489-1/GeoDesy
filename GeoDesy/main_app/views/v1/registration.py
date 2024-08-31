@@ -1,11 +1,14 @@
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from main_app.serializers.v1 import registration
-from utils.context import CurrentContext, InContextAPI
+from main_app.views.base_view import BaseApiView
+from utils.context import CurrentContext
+
+__all__ = (
+    "RegistrationAPIView",
+)
 
 
-class RegistrationAPIView(APIView):
-    @InContextAPI()
+class RegistrationAPIView(BaseApiView):
     def post(self, request):
         ctx = CurrentContext()
         serializer = registration.CreateRegistrationSerializer(data=request.data)
@@ -14,7 +17,6 @@ class RegistrationAPIView(APIView):
         response = ctx.response
         return Response(response)
 
-    @InContextAPI()
     def put(self, request):
         ctx = CurrentContext()
         serializer = registration.UpdateRegistrationSerializer(data=request.data)

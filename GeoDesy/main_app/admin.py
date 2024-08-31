@@ -11,6 +11,10 @@ from main_app.models import Card, User
 from utils.card_tools import printable_type_of_sign, printable_sign_height_above_ground_level
 from dalf.admin import DALFModelAdmin, DALFRelatedOnlyField
 
+__all__ = (
+    "UserAdmin", "CardAdmin"
+)
+
 
 def _create_user_info_context(user, datetime_field):
     context = user.get_user_info
@@ -42,6 +46,7 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Card)
 class CardAdmin(DALFModelAdmin):
     form = CardForm
+    save_on_top = True
     readonly_fields = ("photos", "execution", "inspection", "geo_info", "type_of_sign_desc",
                        "sign_height_above_ground_level_info", "sign_height_info")
     fields = (
@@ -118,8 +123,8 @@ class CardAdmin(DALFModelAdmin):
         obj.coordinates.save()
         obj.save()
 
-    def has_download_pdf_card(self, obj):
-        if obj.status == Card.SuccessChoice.SUCCESS:
+    def has_download_pdf_card(self, obj, errors):
+        if len(errors) == 0 and obj.status == Card.SuccessChoice.SUCCESS:
             return True
         else:
             return False
@@ -127,5 +132,5 @@ class CardAdmin(DALFModelAdmin):
     def render_change_form(
             self, request, context, add=False, change=False, form_url="", obj=None
     ):
-        context.update({"show_open_pdf_button": self.has_download_pdf_card(obj)})
+        context.update({"show_open_pdf_button": self.has_download_pdf_card(obj, context["errors"])})
         return super().render_change_form(request, context, add, change, form_url, obj)

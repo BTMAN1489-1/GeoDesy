@@ -5,6 +5,10 @@ try:
 except ImportError:
     import json
 
+__all__ = (
+    "Singleton", "serialize_to_json", "deserialize_to_dict"
+)
+
 
 class Singleton:
     _instance = None

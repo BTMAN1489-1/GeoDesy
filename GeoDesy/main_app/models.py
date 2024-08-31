@@ -1,9 +1,13 @@
 from django.db import models
-from main_app.db import managers
+from main_app.db import *
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from utils.custom_validators import validate_russian_text
 from utils.card_tools import CardChoices, printable_coordinates
 from django.conf import settings
+
+__all__ = (
+    "User", "FederalDistrict", "FederalSubject", "GeoPoint", "TFA", "Session", "Photo", "Card"
+)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -29,7 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
 
-    objects = managers.UserManager()
+    objects = UserManager()
 
     @property
     def full_name(self):
@@ -76,14 +80,13 @@ class GeoPoint(models.Model):
     longitude = models.FloatField()
     subject = models.ForeignKey('FederalSubject', on_delete=models.PROTECT, related_name='geo_points', verbose_name="Субъект РФ")
 
-    objects = managers.MapQuerySet.as_manager()
+    objects = MapQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'координаты'
         verbose_name_plural = 'координаты'
-        constraints = [
-            models.UniqueConstraint(fields=('latitude', 'longitude'), name='unique_coordinates'),
-        ]
+        ordering = ("latitude", "longitude")
+        constraints = (models.UniqueConstraint(fields=('latitude', 'longitude'), name='unique_coordinates'),)
 
     @property
     def federal_subject(self):
@@ -93,8 +96,12 @@ class GeoPoint(models.Model):
     def federal_district(self):
         return self.subject.district.name
 
+    @property
+    def printable_coordinates(self):
+        return printable_coordinates(self)
+
     def __str__(self):
-        return "     ".join(printable_coordinates(self))
+        return "     ".join(self.printable_coordinates)
 
 
 class TFA(models.Model):
@@ -108,14 +115,14 @@ class TFA(models.Model):
     confirm_code = models.CharField()
     expired_datetime_code = models.DateTimeField()
 
-    objects = managers.TFAQuerySet.as_manager()
+    objects = TFAQuerySet.as_manager()
 
 
 class Session(models.Model):
     api_id = models.UUIDField(primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='sessions')
 
-    objects = managers.SessionQuerySet.as_manager()
+    objects = SessionQuerySet.as_manager()
 
 
 class Photo(models.Model):
@@ -182,7 +189,7 @@ class Card(models.Model):
                                                verbose_name="Высота над уровнем моря")
     trapezoids = models.CharField(null=True, default=None, blank=True, verbose_name="Трапеции")
 
-    objects = managers.CardQueryset.as_manager()
+    objects = CardQueryset.as_manager()
 
     class Meta:
         verbose_name = 'карточка пункта ГГС'

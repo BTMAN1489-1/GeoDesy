@@ -1,4 +1,8 @@
 import math
+from config import COORD_ROUND_SCALE
+__all__ = (
+    "R", "Coord", "Point", "Geometry"
+)
 
 R = 6371300  # радиус Земли в метрах
 
@@ -15,7 +19,7 @@ class Coord:
 
         @latitude.setter
         def latitude(self, value: float):
-            self._latitude = round(value, 10)
+            self._latitude = round(value, COORD_ROUND_SCALE)
 
         @property
         def longitude(self):
@@ -23,7 +27,7 @@ class Coord:
 
         @longitude.setter
         def longitude(self, value: float):
-            self._longitude = round(value, 10)
+            self._longitude = round(value, COORD_ROUND_SCALE)
 
         def as_tuple(self):
             return self.latitude, self.longitude

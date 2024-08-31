@@ -1,6 +1,6 @@
 from django.utils.formats import localize
-from .data import displayed_fields, displayed_Card_fields, displayed_GeoPoint_fields, owners
-from .choices import TypeSignChoice
+from utils.card_tools.data import displayed_fields, displayed_Card_fields, displayed_GeoPoint_fields, owners
+from utils.card_tools.choices import TypeSignChoice
 
 __all__ = ("card_to_dict", "printable_type_of_sign", "printable_coordinates",
            "printable_sign_height_above_ground_level")

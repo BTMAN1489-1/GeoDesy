@@ -2,6 +2,10 @@ from utils.algorithms import Singleton
 from utils.message_tools import EmailMessage, Message
 from utils.threads import CustomThreadExecutor
 
+__all__ = (
+    "MessageHandler"
+)
+
 
 class MessageHandler(Singleton):
     _message_class = EmailMessage

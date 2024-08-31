@@ -1,7 +1,11 @@
 from rest_framework.exceptions import APIException
 from django.core.exceptions import ValidationError as ModelValidationError
 from rest_framework.exceptions import ValidationError as APIValidationError
-from utils.context import TypeRequest, CurrentContext
+
+__all__ = (
+    "BadEnterAPIError", "NotFoundAPIError", "PermissionDeniedAPIError", "AuthenticationFailedAPIError",
+    "FailedOperationAPIError", "ValidateError", "InvalidTokenError", "JsonSerializeError", "JsonDeserializeError"
+)
 
 
 class BadEnterAPIError(APIException):
@@ -37,6 +41,8 @@ class FailedOperationAPIError(APIException):
 class ValidateError(Exception):
 
     def __new__(cls, msg):
+        from utils.context import TypeRequest, CurrentContext
+
         type_request = CurrentContext().type_request
         if type_request == TypeRequest.API:
             return APIValidationError(msg)

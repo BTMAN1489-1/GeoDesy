@@ -1,14 +1,16 @@
-from drf_spectacular.extensions import OpenApiAuthenticationExtension, OpenApiViewExtension
+from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.views import extend_schema
-from drf_spectacular.utils import OpenApiTypes, OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema_view
+from drf_spectacular.utils import OpenApiExample
 from rest_framework import status
-from rest_framework.views import APIView
-from main_app.schema import utils
-from main_app.views.v1 import JWT
+from main_app.views.v1.JWT import JWTAuthenticationAPIView
 from main_app.serializers.v1 import user_info
 
+__all__ = (
+    "UserInfoSchema",
+)
 
-class UserInfoMock(JWT.JWTAuthenticationAPIView):
+
+class UserInfoMock(JWTAuthenticationAPIView):
     @extend_schema(
         tags=["О пользователе"],
         summary="Получение информации о пользователе",

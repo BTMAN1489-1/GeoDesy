@@ -1,13 +1,15 @@
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from main_app.serializers.v1 import authorization
-from utils.context import InContextAPI, CurrentContext
-from .JWT import JWTAuthenticationAPIView
+from utils.context import CurrentContext
+from main_app.views.v1.JWT import JWTAuthenticationAPIView
+from main_app.views.base_view import BaseApiView
+__all__ = (
+    "AuthorizationAPIView", "ChangeAuthAPIView", "ForgottenPasswordView"
+)
 
 
-class AuthorizationAPIView(APIView):
+class AuthorizationAPIView(BaseApiView):
 
-    @InContextAPI()
     def post(self, request):
         serializer = authorization.CreateAuthorizationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -18,7 +20,6 @@ class AuthorizationAPIView(APIView):
 
 class ChangeAuthAPIView(JWTAuthenticationAPIView):
 
-    @InContextAPI()
     def post(self, request):
         serializer = authorization.CreateChangeAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -26,7 +27,6 @@ class ChangeAuthAPIView(JWTAuthenticationAPIView):
         ctx = CurrentContext()
         return Response(ctx.response)
 
-    @InContextAPI()
     def put(self, request):
         serializer = authorization.UpdateChangeAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -34,9 +34,8 @@ class ChangeAuthAPIView(JWTAuthenticationAPIView):
         return Response()
 
 
-class ForgottenPasswordView(APIView):
+class ForgottenPasswordView(BaseApiView):
 
-    @InContextAPI()
     def post(self, request):
         serializer = authorization.CreateForgottenPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -44,7 +43,6 @@ class ForgottenPasswordView(APIView):
         ctx = CurrentContext()
         return Response(ctx.response)
 
-    @InContextAPI()
     def put(self, request):
         serializer = authorization.UpdateForgottenPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

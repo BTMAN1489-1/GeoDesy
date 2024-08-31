@@ -22,6 +22,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ajax_select import urls as ajax_select_urls
 
+__all__ = ("urlpatterns",)
 
 admin.autodiscover()
 

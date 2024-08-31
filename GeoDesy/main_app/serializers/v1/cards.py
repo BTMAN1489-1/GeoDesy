@@ -5,8 +5,12 @@ from rest_framework.fields import empty
 import ujson
 from main_app.exceptions import ValidateError
 from main_app.exceptions import NotFoundAPIError
-from utils import data, context, card_tools
+from utils import context, card_tools
 from main_app.models import Card
+
+__all__ = (
+    "CreateCardForUserSerializer", "UpdateCardForStuffSerializer", "ShowCardSerializer"
+)
 
 
 class BaseCardSerializer(serializers.Serializer):
@@ -47,7 +51,7 @@ class PropertySerializer(BaseCardSerializer, RecommendationSerializer, CommentSe
 
 class TypeSignSerializer(BaseCardSerializer):
     value = serializers.ChoiceField(choices=card_tools.TypeSignChoice.choices)
-    properties = serializers.DictField(child=serializers.CharField(max_length=255), required=False, default={})
+    properties = serializers.DictField(child=serializers.CharField(max_length=255), required=False, default=dict)
 
     def validate(self, attrs):
         choice_name = attrs["value"]
@@ -93,7 +97,7 @@ class PossibleProperty(PropertySerializer):
 
 class UserInput(serializers.Serializer):
     execute_date = serializers.DateField()
-    federal_subject = serializers.ChoiceField(choices=data.FEDERAL_SUBJECTS_NAMES)
+    federal_subject = serializers.ChoiceField(choices=card_tools.FEDERAL_SUBJECTS_NAMES)
     latitude = serializers.FloatField(min_value=-90, max_value=90)
     longitude = serializers.FloatField(min_value=-180, max_value=180)
     sign_height_above_ground_level = serializers.FloatField()
@@ -193,12 +197,12 @@ class OwnedCardField(serializers.Serializer):
 
 
 class ShowCardSerializer(serializers.Serializer):
-    cards = serializers.ListField(child=serializers.UUIDField(), required=False, max_length=100, default=[])
-    geopoints = serializers.ListField(child=serializers.UUIDField(), required=False, max_length=100, default=[])
+    cards = serializers.ListField(child=serializers.UUIDField(), required=False, max_length=100, default=list)
+    geopoints = serializers.ListField(child=serializers.UUIDField(), required=False, max_length=100, default=list)
     displayed_fields = serializers.ListField(child=serializers.ChoiceField(choices=card_tools.displayed_fields),
                                              required=False, allow_empty=True, max_length=100)
 
-    sorted_by = serializers.ListField(child=SortedField(), required=False, default=[])
+    sorted_by = serializers.ListField(child=SortedField(), required=False, allow_null=True, default=list)
     status = serializers.ChoiceField(choices=Card.StatusChoice, required=False, allow_null=True, default=None)
     limit = serializers.IntegerField(min_value=0, max_value=1000, required=False, default=100)
     offset = serializers.IntegerField(min_value=0, max_value=1000, required=False, default=0)

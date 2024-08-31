@@ -1,3 +1,6 @@
+
+<script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
+
 {% load l10n %}
 {% localize off %}
 <script type="text/javascript">
@@ -8,9 +11,11 @@
             center: [{{ geo.latitude }}, {{ geo.longitude }}],
             zoom: 13
         });
-        DG.marker([{{ geo.latitude }}, {{ geo.longitude }}]).addTo(map).bindPopup('<p>{{ geo }}</p>');
+        DG.marker([{{ geo.latitude }}, {{ geo.longitude }}]).addTo(map).bindPopup(
+        '<div class="flex-container">{% for value in geo.printable_coordinates %}<span class="card-data-item">{{ value }}</span>{% endfor %}</div>'
+        );
     });
 </script>
 {% endlocalize %}
-<div id="card_map" style="width: 500px; height: 400px"></div>
+<div id="card_map" style="width: 600px; height: 400px"></div>
 

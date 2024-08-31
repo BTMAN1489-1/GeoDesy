@@ -1,4 +1,7 @@
 from django.apps import AppConfig
+from geodesy import settings
+
+__all__ = ("MainAppConfig",)
 
 
 class MainAppConfig(AppConfig):
@@ -8,6 +11,7 @@ class MainAppConfig(AppConfig):
 
     def ready(self):
         super().ready()
-        import main_app.schema
+        if settings.DEBUG:
+            import main_app.schema
 
 

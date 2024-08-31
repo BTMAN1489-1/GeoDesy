@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Collection
+from collections.abc import Collection
 from dataclasses import dataclass, field, replace
 from typing import Optional, Union, Iterable
 from fpdf import Align, FontFace

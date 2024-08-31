@@ -1,8 +1,12 @@
 from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.views import extend_schema
 from rest_framework import status, serializers
-from main_app.views.v1 import JWT
+from main_app.views.base_view import BaseApiView
 from main_app.serializers.v1 import geo_points
+
+__all__ = (
+    "GeoPointSchema",
+)
 
 
 class GeoPointResponse(serializers.Serializer):
@@ -11,7 +15,7 @@ class GeoPointResponse(serializers.Serializer):
     guid = serializers.UUIDField()
 
 
-class GeoPointMock(JWT.APIView):
+class GeoPointMock(BaseApiView):
     @extend_schema(
         tags=["Карта"],
         summary="Получение списка координат пунктов ГГС",

@@ -1,14 +1,17 @@
-from drf_spectacular.extensions import OpenApiAuthenticationExtension, OpenApiViewExtension
+from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.views import extend_schema
-from drf_spectacular.utils import OpenApiTypes, OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema_view
+from drf_spectacular.utils import OpenApiExample
 from rest_framework import status
-from rest_framework.views import APIView
 from main_app.schema import utils
-
+from main_app.views.base_view import BaseApiView
 from main_app.serializers.v1 import TFA, registration
 
+__all__ = (
+    "RegistrationSchema",
+)
 
-class RegistrationMock(APIView):
+
+class RegistrationMock(BaseApiView):
     @extend_schema(
         tags=["Регистрация"],
         summary="Первый этап",

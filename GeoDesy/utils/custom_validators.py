@@ -1,6 +1,6 @@
 from main_app.exceptions import ValidateError, InvalidTokenError, BadEnterAPIError
 from main_app import models
-from .auth_tools import parse_token, verify_token
+from utils.auth_tools import parse_token, verify_token
 
 
 def validate_russian_text(russian_text: str):

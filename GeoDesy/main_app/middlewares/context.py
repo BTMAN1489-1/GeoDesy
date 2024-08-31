@@ -1,5 +1,9 @@
 from utils.context import CurrentContext
 
+__all__ = (
+    "ContextMiddleware",
+)
+
 
 class ContextMiddleware:
     def __init__(self, get_response):

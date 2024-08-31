@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 import config
-from .TFA import TwoFactoryAuthentication
+from main_app.serializers.v1.TFA import TwoFactoryAuthentication
 from main_app.models import Session, User, TFA
 from utils.custom_validators import validate_russian_text, check_unique_email
 from utils.auth_tools import create_jwt_tokens
@@ -10,6 +10,10 @@ from django.db import IntegrityError
 from main_app.exceptions import BadEnterAPIError
 from utils.context import CurrentContext
 from utils import mocks
+
+__all__ = (
+    "CreateRegistrationSerializer", "UpdateRegistrationSerializer"
+)
 
 
 class CreateRegistrationSerializer(serializers.Serializer):
