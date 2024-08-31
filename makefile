@@ -5,6 +5,7 @@ env-prepare:
 	cp -n ./env.dist .env
 
 install-requirements: create-venv
+	 $(python-venv) -m pip install --upgrade pip
 	 $(python-venv) -m pip install -r requirements.txt
 
 create-venv:
