@@ -1,6 +1,6 @@
 python-venv = ./venv/Scripts/python.exe
 server-host = 127.0.0.1
-server-port = 1488
+server-port = 8000
 env-prepare:
 	cp -n ./env.dist .env
 
@@ -18,7 +18,7 @@ db-make-migrations:
 	$(python-venv) ./GeoDesy/manage.py makemigrations
 
 db-migrate:
-	$(python-venv) ./GeoDesy/manage.py migrate $(app_name) $(migrate-name)
+	$(python-venv) ./GeoDesy/manage.py migrate $(app-name) $(migration-name)
 
 create-superuser:
 	$(python-venv) ./GeoDesy/manage.py createsuperuser --no-input
