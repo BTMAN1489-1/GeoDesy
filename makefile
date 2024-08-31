@@ -2,7 +2,7 @@ python-venv = ./venv/bin/python3
 server-host = 127.0.0.1
 server-port = 1488
 env-prepare:
-	cp -n env.dist .env
+	cp -n ./env.dist .env
 
 install-requirements: create-venv
 	 $(python-venv) -m pip install -r requirements.txt
