@@ -14,7 +14,7 @@ db-prepare:
 	$(python-venv) ./GeoDesy/manage.py migrate
 
 db-make-migrations:
-	$(python-venv) ./GeoDesy/manage.py migrate $(app_name)
+	$(python-venv) ./GeoDesy/manage.py migrate $(app_name) $(migrate-name)
 
 create-superuser:
 	$(python-venv) ./GeoDesy/manage.py createsuperuser --no-input
