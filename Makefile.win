@@ -2,7 +2,7 @@ python-venv = ./venv/Scripts/python.exe
 server-host = 127.0.0.1
 server-port = 8000
 env-prepare:
-	cp -n ./env.dist .env
+	copy ./env.dist .env
 
 install-requirements: create-venv
 	 $(python-venv) -m pip install --upgrade pip
