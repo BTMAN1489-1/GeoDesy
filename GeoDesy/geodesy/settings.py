@@ -166,3 +166,5 @@ MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
 AUTH_USER_MODEL = "main_app.User"
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
