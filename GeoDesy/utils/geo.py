@@ -103,7 +103,7 @@ class Geometry:
         len1 = point1.norm()
         len2 = point2.norm()
         assert len1 != 0 and len2 != 0, "Для вычисления длины дуги векторы должны иметь невырожденную норму"
-        return R * math.acos(point1 * point2 / (len1 * len2))
+        return R * math.acos(round(point1 * point2 / (len1 * len2), 2))
 
     @classmethod
     def get_precision_by_length(cls, length: float, in_radians: bool = False) -> float:

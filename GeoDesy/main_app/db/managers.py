@@ -95,7 +95,7 @@ select * from select_by_longitudes;
             for p in points:
                 iter_coord.update(p.latitude, p.longitude)
                 iter_point.update(iter_coord)
-                distance = round(geo.Geometry.arc_length(center_point, iter_point), 2)
+                distance = round(geo.Geometry.vector_length(center_point, iter_point), 2)
                 if distance < min_distance:
                     min_distance = distance
                     min_point_by_distance = p
