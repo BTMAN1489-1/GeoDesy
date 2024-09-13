@@ -208,14 +208,6 @@ class ShowCardSerializer(serializers.Serializer):
     offset = serializers.IntegerField(min_value=0, max_value=1000, required=False, default=0)
     only_owned = OwnedCardField(required=False, default={"as_executor": True, "as_inspector": False})
 
-    def validate_status(self, value):
-        ctx = context.CurrentContext()
-        user = ctx.user
-        if user.is_staff:
-            return value
-        else:
-            return Card.StatusChoice.SUCCESS
-
     def create(self, validated_data):
         ctx = context.CurrentContext()
         user = ctx.user

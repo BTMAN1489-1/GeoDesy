@@ -158,14 +158,16 @@ class CardQueryset(QuerySet):
         if only_owned_as_executor or is_staff:
             if status is not None:
                 filter_ &= Q(status=status)
+        else:
+            filter_ &= Q(status=self.model.SuccessChoice.SUCCESS)
 
-            sub_filter = Q()
-            if is_staff and only_owned_as_inspector:
-                sub_filter = Q(inspector=user)
-            if only_owned_as_executor:
-                sub_filter |= Q(executor=user)
+        sub_filter = Q()
+        if is_staff and only_owned_as_inspector:
+            sub_filter |= Q(inspector=user)
+        if only_owned_as_executor:
+            sub_filter |= Q(executor=user)
 
-            filter_ &= sub_filter
+        filter_ &= sub_filter
 
         if cards:
             filter_ &= Q(card_uuid__in=cards)
