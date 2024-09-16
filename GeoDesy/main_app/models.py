@@ -19,7 +19,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=255, verbose_name='Имя', validators=(validate_russian_text,))
     second_name = models.CharField(max_length=255, verbose_name='Фамилия', validators=(validate_russian_text,))
     third_name = models.CharField(max_length=255, verbose_name='Отчество', validators=(validate_russian_text,))
-    sex = models.TextField(choices=Sex.choices, verbose_name='Пол', validators=(validate_russian_text,))
+    sex = models.TextField(choices=Sex.choices, verbose_name='Пол')
 
     email = models.EmailField(verbose_name='Email', unique=True,
                               error_messages={
